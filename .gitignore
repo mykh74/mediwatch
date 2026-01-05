@@ -1,0 +1,29 @@
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data / artifacts
+/data/
+/artifacts/
+/mlruns/
+
+# Ray
+/ray_results/
+
+# Build
+build/
+dist/
+*.egg-info/
+
+.history/
+MediWatch.txt
