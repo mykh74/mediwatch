@@ -2,6 +2,11 @@
 
 Predicting patient readmission through Machine Learning + MLOps best practices.
 
+## Links
+Trello: https://trello.com/b/KPd4h1lW/mediwatch
+Github: https://github.com/mykh74/mediwatch
+
+
 ## Project Overview
 
 MediWatch is an end-to-end MLOps project for predicting hospital patient readmission using the diabetes readmission dataset from Kaggle. The project demonstrates production-ready ML practices including automated data pipelines, experiment tracking, model registry, and deployment preparation.
