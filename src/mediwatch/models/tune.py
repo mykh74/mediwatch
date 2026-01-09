@@ -25,14 +25,18 @@ from sklearn.preprocessing import StandardScaler
 try:
     import xgboost as xgb
     XGBOOST_AVAILABLE = True
-except ImportError:
+except (ImportError, Exception) as e:
+    # Handle both import errors and library loading errors
     XGBOOST_AVAILABLE = False
+    xgb = None
 
 try:
     import lightgbm as lgb
     LIGHTGBM_AVAILABLE = True
-except ImportError:
+except (ImportError, Exception) as e:
+    # Handle both import errors and library loading errors
     LIGHTGBM_AVAILABLE = False
+    lgb = None
 
 
 def get_search_space(model_name: str) -> Dict[str, Any]:
@@ -247,10 +251,6 @@ def run_hpo(
             max_concurrent_trials=max_concurrent_trials,
         ),
         param_space=search_space,
-        run_config=train.RunConfig(
-            name=f"hpo_{model_name}",
-            stop={"training_iteration": cv},
-        ),
     )
     
     results = tuner.fit()

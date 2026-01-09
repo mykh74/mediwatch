@@ -115,7 +115,6 @@ Available baseline models:
 - `gradient_boosting`: Gradient boosting classifier
 - `xgboost`: XGBoost classifier (if installed)
 - `lightgbm`: LightGBM classifier (if installed)
-- `catboost`: CatBoost classifier (if installed)
 
 ### 3. Evaluate Models
 
@@ -168,7 +167,6 @@ print(f"Best score: {hpo_results['best_score']:.4f}")
 - **Gradient Boosting**: n_estimators, learning_rate, max_depth, min_samples_split
 - **XGBoost**: n_estimators, learning_rate, max_depth, min_child_weight, subsample, colsample_bytree
 - **LightGBM**: n_estimators, learning_rate, max_depth, num_leaves, min_child_samples
-- **CatBoost**: iterations, learning_rate, depth, l2_leaf_reg
 
 ### 5. Train Final Model with Best Hyperparameters
 

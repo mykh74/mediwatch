@@ -18,20 +18,18 @@ from sklearn.preprocessing import StandardScaler
 try:
     import xgboost as xgb
     XGBOOST_AVAILABLE = True
-except ImportError:
+except (ImportError, Exception) as e:
+    # Handle both import errors and XGBoost library loading errors
     XGBOOST_AVAILABLE = False
+    xgb = None
 
 try:
     import lightgbm as lgb
     LIGHTGBM_AVAILABLE = True
-except ImportError:
+except (ImportError, Exception) as e:
+    # Handle both import errors and library loading errors
     LIGHTGBM_AVAILABLE = False
-
-try:
-    import catboost as cb
-    CATBOOST_AVAILABLE = True
-except ImportError:
-    CATBOOST_AVAILABLE = False
+    lgb = None
 
 
 @dataclass(frozen=True)
@@ -116,19 +114,6 @@ def get_baseline_models() -> Dict[str, Any]:
                 "n_jobs": -1,
                 "class_weight": "balanced",
                 "verbose": -1,
-            }
-        )
-    
-    if CATBOOST_AVAILABLE:
-        models["catboost"] = (
-            cb.CatBoostClassifier,
-            {
-                "iterations": 100,
-                "learning_rate": 0.1,
-                "depth": 6,
-                "random_state": 42,
-                "verbose": False,
-                "auto_class_weights": "Balanced",
             }
         )
     

@@ -280,7 +280,6 @@ predictions = model.predict(X_test)
 | Gradient Boosting | Boosted trees | Medium | Very Good |
 | XGBoost | Optimized gradient boosting | Medium-Fast | Excellent |
 | LightGBM | Fast gradient boosting | Fast | Excellent |
-| CatBoost | Categorical-focused boosting | Medium | Excellent |
 
 ## Tips for Best Results
 

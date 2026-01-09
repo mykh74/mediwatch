@@ -23,7 +23,7 @@ MediWatch is an end-to-end MLOps project for predicting hospital patient readmis
 ## Key Features
 
 - **Production-Grade Data Pipeline**: Automated preprocessing with artifact management (no data leakage)
-- **Multiple ML Models**: 6 baseline algorithms (Logistic Regression, Random Forest, Gradient Boosting, XGBoost, LightGBM, CatBoost)
+- **Multiple ML Models**: 5 baseline algorithms (Logistic Regression, Random Forest, Gradient Boosting, XGBoost, LightGBM)
 - **Hyperparameter Optimization**: Ray Tune with ASHA scheduler for efficient HPO
 - **Experiment Tracking**: MLflow for comprehensive experiment tracking and comparison
 - **Model Registry**: MLflow model registry with staging and production promotion
@@ -170,13 +170,12 @@ MediWatch/
 
 ### Model Training ✅
 
-- **6 Baseline Models**:
+- **5 Baseline Models**:
   - Logistic Regression
   - Random Forest
   - Gradient Boosting
   - XGBoost
   - LightGBM
-  - CatBoost
 - **Comprehensive Evaluation**:
   - Accuracy, Precision, Recall, F1 Score
   - ROC-AUC and ROC curves
