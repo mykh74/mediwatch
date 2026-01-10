@@ -7,10 +7,14 @@ REST API for patient readmission prediction.
 import logging
 import os
 import json
+import sys
 import joblib
 import pickle
 from datetime import datetime
 from pathlib import Path
+
+# Add src to Python path for imports
+sys.path.insert(0, 'src')
 
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -78,14 +82,19 @@ async def startup_event():
             with open(artifacts_path, 'rb') as f:
                 preprocessing_artifacts = pickle.load(f)
             logger.info(f"✓ Preprocessing artifacts loaded from {artifacts_path}")
+            logger.info(f"  Features expected: {len(preprocessing_artifacts.feature_names)}")
         else:
             logger.warning(f"Preprocessing artifacts not found at {artifacts_path}")
+            preprocessing_artifacts = None
         
         logger.info("✓ API ready to serve predictions")
         
     except Exception as e:
-        logger.error(f"Failed to load model: {e}")
+        logger.error(f"Failed to load model or artifacts: {e}")
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
         model = None
+        preprocessing_artifacts = None
 
 
 @app.get("/")

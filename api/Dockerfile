@@ -26,6 +26,8 @@ RUN pip install --upgrade pip && \
 COPY src /app/src
 COPY api /app/api
 COPY pyproject.toml /app/pyproject.toml
+COPY models /app/models
+COPY data/processed/preprocessing_artifacts.pkl /app/data/processed/preprocessing_artifacts.pkl
 
 # Install the package in editable mode for simple imports
 RUN pip install --no-cache-dir -e .
