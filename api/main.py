@@ -28,8 +28,8 @@ logger = logging.getLogger(__name__)
 # Initialize FastAPI app
 app = FastAPI(
     title="MediWatch API",
-    description="Patient Readmission Prediction API",
-    version="1.0.0",
+    description="Binary Patient Readmission Prediction API - Predicts early readmission (<30 days)",
+    version="2.0.0",
     docs_url="/docs",
     redoc_url="/redoc"
 )
@@ -161,24 +161,27 @@ def predict_simple(request: dict):
         # Convert request to DataFrame
         features_df = pd.DataFrame([request])
         
-        # Make prediction
+        # Make prediction (binary classification)
         prediction = model.predict(features_df)[0]
         probability = model.predict_proba(features_df)[0]
         
-        # Get risk level
-        max_prob = float(np.max(probability))
-        if max_prob < 0.3:
+        # Get probability of positive class (early readmission <30 days)
+        readmission_prob = float(probability[1]) if len(probability) > 1 else float(probability[0])
+        
+        # Get risk level based on readmission probability
+        if readmission_prob < 0.3:
             risk_level = "Low"
-        elif max_prob < 0.7:
+        elif readmission_prob < 0.7:
             risk_level = "Medium"
         else:
             risk_level = "High"
         
         return {
             "prediction": int(prediction),
-            "probability": max_prob,
+            "prediction_label": "Early readmission (<30 days)" if prediction == 1 else "No early readmission",
+            "readmission_probability": readmission_prob,
             "risk_level": risk_level,
-            "model_version": "1.0.0"
+            "model_version": "2.0.0"
         }
         
     except Exception as e:
@@ -203,24 +206,27 @@ async def predict_v1(request: dict):
         features = request.get('features', request)
         features_df = pd.DataFrame([features])
         
-        # Make prediction
+        # Make prediction (binary classification)
         prediction = model.predict(features_df)[0]
         probability = model.predict_proba(features_df)[0]
-        max_prob = float(np.max(probability))
         
-        # Get risk level
-        if max_prob < 0.3:
+        # Get probability of positive class (early readmission <30 days)
+        readmission_prob = float(probability[1]) if len(probability) > 1 else float(probability[0])
+        
+        # Get risk level based on readmission probability
+        if readmission_prob < 0.3:
             risk_level = "Low"
-        elif max_prob < 0.7:
+        elif readmission_prob < 0.7:
             risk_level = "Medium"
         else:
             risk_level = "High"
         
         return {
             "prediction": int(prediction),
-            "probability": max_prob,
+            "prediction_label": "Early readmission (<30 days)" if prediction == 1 else "No early readmission",
+            "readmission_probability": readmission_prob,
             "risk_level": risk_level,
-            "model_version": "1.0.0"
+            "model_version": "2.0.0"
         }
     except Exception as e:
         logger.error(f"Prediction failed: {e}")
@@ -254,18 +260,21 @@ async def predict_batch_v1(request: dict):
             features_df = pd.DataFrame([patient])
             prediction = model.predict(features_df)[0]
             probability = model.predict_proba(features_df)[0]
-            max_prob = float(np.max(probability))
             
-            if max_prob < 0.3:
+            # Get probability of positive class (early readmission <30 days)
+            readmission_prob = float(probability[1]) if len(probability) > 1 else float(probability[0])
+            
+            if readmission_prob < 0.3:
                 risk_level = "Low"
-            elif max_prob < 0.7:
+            elif readmission_prob < 0.7:
                 risk_level = "Medium"
             else:
                 risk_level = "High"
             
             predictions.append({
                 "prediction": int(prediction),
-                "probability": max_prob,
+                "prediction_label": "Early readmission (<30 days)" if prediction == 1 else "No early readmission",
+                "readmission_probability": readmission_prob,
                 "risk_level": risk_level
             })
         

@@ -140,9 +140,10 @@ class BatchPredictionRequest(BaseModel):
 
 
 class PredictionResponse(BaseModel):
-    """Response model for single prediction."""
-    prediction: int = Field(..., description="Readmission prediction (0: No, 1: Yes)")
-    probability: float = Field(..., ge=0.0, le=1.0, description="Readmission probability")
+    """Response model for single prediction (Binary Classification)."""
+    prediction: int = Field(..., description="Binary prediction: 0=No early readmission, 1=Early readmission (<30 days)")
+    prediction_label: str = Field(..., description="Human-readable prediction label")
+    readmission_probability: float = Field(..., ge=0.0, le=1.0, description="Probability of early readmission (<30 days)")
     risk_level: str = Field(..., description="Risk level: Low, Medium, High")
     model_version: str = Field(..., description="Model version")
     

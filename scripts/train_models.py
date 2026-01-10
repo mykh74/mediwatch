@@ -4,8 +4,7 @@ import joblib
 import os
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
-from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
-from sklearn.preprocessing import label_binarize
+from sklearn.metrics import accuracy_score, f1_score, roc_auc_score, precision_score, recall_score
 import json
 
 def main():
@@ -21,8 +20,11 @@ def main():
 
     print(f'Training data shape: {X_train.shape}')
     print(f'Test data shape: {X_test.shape}')
-    print(f'\nTarget distribution:')
+    print(f'\nTarget distribution (Binary Classification):')
+    print(f'  0 = No readmission or late readmission (>30 days)')
+    print(f'  1 = Early readmission (<30 days) - TARGET')
     print(y_train.value_counts())
+    print(f'\nClass balance: {y_train.value_counts(normalize=True) * 100}')
 
     models = {
         'Logistic_Regression': LogisticRegression(max_iter=1000, random_state=42),
@@ -47,13 +49,18 @@ def main():
         y_pred = model.predict(X_test)
         y_pred_proba = model.predict_proba(X_test)
         
-        # Calculate metrics
+        # Calculate metrics for binary classification
         accuracy = accuracy_score(y_test, y_pred)
-        f1 = f1_score(y_test, y_pred, average='weighted')
+        f1 = f1_score(y_test, y_pred, average='binary', pos_label=1)
         
-        # ROC-AUC for multiclass
-        y_test_bin = label_binarize(y_test, classes=model.classes_)
-        roc_auc = roc_auc_score(y_test_bin, y_pred_proba, average='weighted', multi_class='ovr')
+        # ROC-AUC for binary classification
+        if len(model.classes_) == 2:
+            # Binary: use probability of positive class (early readmission)
+            roc_auc = roc_auc_score(y_test, y_pred_proba[:, 1])
+        else:
+            # Fallback for multiclass
+            y_test_bin = label_binarize(y_test, classes=model.classes_)
+            roc_auc = roc_auc_score(y_test_bin, y_pred_proba, average='weighted', multi_class='ovr')
         
         # Save model
         model_path = f'models/{name}.pkl'

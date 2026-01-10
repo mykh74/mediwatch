@@ -328,11 +328,21 @@ def preprocess_pipeline(
     print("\n5. Preparing features and target...")
     X, y = prepare_features_and_target(df_encoded, target_col=target_col)
 
-    # Encode target if categorical
+    # Encode target if categorical with explicit mapping
+    # Binary classification: predict early readmission (<30 days)
     target_encoder = None
     if y is not None and y.dtype == "object":
-        target_encoder = LabelEncoder()
-        y = pd.Series(target_encoder.fit_transform(y), name=target_col)
+        print("   Applying binary target encoding (0=No readmission, 1=Early readmission <30 days)")
+        target_mapping = {
+            'NO': 0,    # Not readmitted
+            '<30': 1,   # Early readmission (< 30 days) - TARGET
+            '>30': 0    # Late readmission treated as success
+        }
+        y = y.map(target_mapping)
+        if y.isnull().any():
+            print(f"   Warning: {y.isnull().sum()} unmapped target values found")
+            y = y.fillna(0)
+        y = pd.Series(y.astype(int), name=target_col)
 
     # Step 6: Split data
     print("\n6. Splitting data...")
