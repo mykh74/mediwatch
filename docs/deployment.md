@@ -23,8 +23,11 @@ Complete guide for deploying the MediWatch patient readmission prediction system
 # Terminal 1: Start MLflow
 python scripts/setup_mlflow.py --action start
 
-# Or manually
-mlflow server --host 127.0.0.1 --port 5000
+# Or manually (using virtual environment)
+./.venv/bin/mlflow server --host 127.0.0.1 --port 5000 --backend-store-uri sqlite:///mlruns.db --default-artifact-root ./mlruns
+
+# Or run in background
+nohup ./.venv/bin/mlflow server --host 127.0.0.1 --port 5000 --backend-store-uri sqlite:///mlruns.db --default-artifact-root ./mlruns > mlflow.log 2>&1 &
 ```
 
 #### 2. Set Environment Variables

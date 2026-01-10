@@ -24,17 +24,23 @@ pip install -r requirements.txt
 python scripts/setup_mlflow.py --action start
 ```
 
-**Option B: Manual start**
+**Option B: Manual start (using virtual environment)**
 ```bash
-# Start server on default port (5000)
-mlflow server --host 127.0.0.1 --port 5000
+# Start server with mlruns.db (latest database)
+./.venv/bin/mlflow server --host 127.0.0.1 --port 5000 --backend-store-uri sqlite:///mlruns.db --default-artifact-root ./mlruns
 
-# With specific backend and artifact stores
-mlflow server \
-  --backend-store-uri sqlite:///mlruns/mlflow.db \
-  --default-artifact-root ./mlruns \
-  --host 127.0.0.1 \
-  --port 5000
+# Or run in background
+nohup ./.venv/bin/mlflow server --host 127.0.0.1 --port 5000 --backend-store-uri sqlite:///mlruns.db --default-artifact-root ./mlruns > mlflow.log 2>&1 &
+```
+
+**Option C: Stop and restart**
+```bash
+# Kill existing MLflow server
+pkill -f "mlflow server"
+# Or kill process on port 5000
+lsof -ti:5000 | xargs kill -9
+
+# Then start as shown above
 ```
 
 ### 2. Initialize Experiment

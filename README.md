@@ -97,8 +97,11 @@ python scripts/preprocess_data.py
 ### 4. Train Models
 
 ```bash
-# Start MLflow server
-python scripts/setup_mlflow.py --action start
+# Start MLflow server (using virtual environment)
+./.venv/bin/mlflow server --host 127.0.0.1 --port 5000 --backend-store-uri sqlite:///mlruns.db --default-artifact-root ./mlruns
+
+# Or run in background
+nohup ./.venv/bin/mlflow server --host 127.0.0.1 --port 5000 --backend-store-uri sqlite:///mlruns.db --default-artifact-root ./mlruns > mlflow.log 2>&1 &
 
 # Open training notebook
 jupyter notebook notebooks/02_model_training.ipynb

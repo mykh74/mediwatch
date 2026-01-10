@@ -16,6 +16,8 @@ venv/
 /data/
 /artifacts/
 /mlruns/
+/mlflow_backup/
+mlflow.log
 
 # Ray
 /ray_results/

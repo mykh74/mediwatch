@@ -272,14 +272,19 @@ def run_hpo(
         print(f"  {key}: {value}")
     print("=" * 80)
     
-    # Log best result to MLflow
-    with mlflow.start_run(run_name=f"{model_name}_best_hpo"):
-        mlflow.log_params(best_config)
-        mlflow.log_metric("cv_f1_score", best_score)
-        mlflow.log_metric("tuning_time", tuning_time)
-        mlflow.log_param("model_name", model_name)
-        mlflow.log_param("num_trials", num_samples)
-        mlflow.log_param("cv_folds", cv)
+    # Log best result to MLflow (with error handling for transient failures)
+    try:
+        with mlflow.start_run(run_name=f"{model_name}_best_hpo"):
+            mlflow.log_params(best_config)
+            mlflow.log_metric("cv_f1_score", best_score)
+            mlflow.log_metric("tuning_time", tuning_time)
+            mlflow.log_param("model_name", model_name)
+            mlflow.log_param("num_trials", num_samples)
+            mlflow.log_param("cv_folds", cv)
+        print("✓ Results logged to MLflow")
+    except Exception as e:
+        print(f"⚠ Warning: Could not log to MLflow: {e}")
+        print("  HPO results are still available locally")
     
     return {
         "best_config": best_config,
