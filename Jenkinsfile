@@ -91,9 +91,6 @@ pipeline {
                         echo "Docker version:"
                         docker --version
                         
-                        echo "Python version:"
-                        python3 --version || python --version
-                        
                         echo "Current directory:"
                         pwd
                         
