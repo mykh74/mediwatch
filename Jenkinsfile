@@ -13,6 +13,7 @@ pipeline {
     
     environment {
         // Docker Configuration
+        DOCKER_API_VERSION = '1.43'
         DOCKER_REGISTRY = 'docker.io'
         IMAGE_NAME = 'mediwatch-api'
         IMAGE_TAG = "${env.BUILD_NUMBER}"
