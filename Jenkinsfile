@@ -181,7 +181,7 @@ pipeline {
                         }
                         
                         echo "Testing model info endpoint..."
-                        curl -f http://localhost:8888/model/info || {
+                        docker exec mediwatch-test curl -f http://localhost:8000/model/info || {
                             echo "Model info check failed!"
                             exit 1
                         }
