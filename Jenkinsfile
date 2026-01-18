@@ -168,14 +168,14 @@ pipeline {
                     // Run health check
                     sh """
                         echo "Testing health endpoint..."
-                        curl -f http://localhost:8888/health || {
+                        docker exec mediwatch-test curl -f http://localhost:8000/health || {
                             echo "Health check failed!"
                             docker logs mediwatch-test
                             exit 1
                         }
                         
                         echo "Testing API docs..."
-                        curl -f http://localhost:8888/docs || {
+                        docker exec mediwatch-test curl -f http://localhost:8000/docs || {
                             echo "API docs check failed!"
                             exit 1
                         }
