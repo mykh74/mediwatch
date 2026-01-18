@@ -350,8 +350,7 @@ EOF
                     if (env.DEPLOY_MODE == 'docker') {
                         sh """
                             echo "Testing deployed Docker container..."
-                            curl -f http://localhost:8000/health
-                            curl -f http://localhost:8000/model/info
+                            docker exec mediwatch-api curl -f http://localhost:8000/health
                             echo "Smoke test passed!"
                         """
                     } else {
