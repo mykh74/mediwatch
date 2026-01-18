@@ -67,16 +67,16 @@ async def startup_event():
     try:
         logger.info("Initializing MediWatch API...")
         
-        # Load model
+        # Load model (optional - will fetch from MLflow if needed)
         model_path = Path(MODEL_PATH)
         if model_path.exists():
             model = joblib.load(model_path)
             logger.info(f"✓ Model loaded from {model_path}")
         else:
-            logger.error(f"Model not found at {model_path}")
-            raise FileNotFoundError(f"Model file not found: {model_path}")
+            logger.warning(f"Model not found at {model_path} - will fetch from MLflow on first prediction")
+            model = None
         
-        # Load preprocessing artifacts
+        # Load preprocessing artifacts (optional)
         artifacts_path = Path(PREPROCESSING_ARTIFACTS_PATH)
         if artifacts_path.exists():
             with open(artifacts_path, 'rb') as f:
@@ -84,7 +84,7 @@ async def startup_event():
             logger.info(f"✓ Preprocessing artifacts loaded from {artifacts_path}")
             logger.info(f"  Features expected: {len(preprocessing_artifacts.feature_names)}")
         else:
-            logger.warning(f"Preprocessing artifacts not found at {artifacts_path}")
+            logger.warning(f"Preprocessing artifacts not found at {artifacts_path} - will fetch from MLflow on first prediction")
             preprocessing_artifacts = None
         
         logger.info("✓ API ready to serve predictions")
