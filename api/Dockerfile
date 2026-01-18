@@ -26,14 +26,13 @@ RUN pip install --upgrade pip && \
 COPY src /app/src
 COPY api /app/api
 COPY pyproject.toml /app/pyproject.toml
-COPY models /app/models
-COPY data/processed/preprocessing_artifacts.pkl /app/data/processed/preprocessing_artifacts.pkl
 
 # Install the package in editable mode for simple imports
 RUN pip install --no-cache-dir -e .
 
-# Create data directory for preprocessing artifacts
-RUN mkdir -p /app/data/processed
+# Create directories for models and data
+# Models and preprocessing artifacts will be fetched from MLflow at runtime
+RUN mkdir -p /app/models /app/data/processed
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
