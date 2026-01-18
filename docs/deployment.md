@@ -142,15 +142,12 @@ docker images | grep mediwatch-api
 ### Run Container Locally
 
 ```bash
-# Run with default settings
-docker run -p 8000:8000 mediwatch-api:latest
-
 # Run with environment variables
 docker run -p 8000:8000 \
   -e MLFLOW_TRACKING_URI="http://host.docker.internal:5000" \
   -e MODEL_NAME="mediwatch_readmission_classifier" \
   -e MODEL_STAGE="Production" \
-  -v $(pwd)/data:/app/data \
+  -v "$(pwd)/data:/app/data" \
   mediwatch-api:latest
 
 # Run in detached mode
