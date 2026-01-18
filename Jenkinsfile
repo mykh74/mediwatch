@@ -242,7 +242,7 @@ pipeline {
                         docker ps | grep mediwatch-api
                         
                         echo "Checking API health..."
-                        curl -f http://localhost:8000/health
+                        docker exec mediwatch-api curl -f http://localhost:8000/health
                         
                         echo "Deployment successful!"
                         echo "API available at: http://localhost:8000"
