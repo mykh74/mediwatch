@@ -18,15 +18,20 @@ MediWatch is an end-to-end MLOps project for predicting hospital patient readmis
 ✅ **Completed**: Model Development and Training  
 ✅ **Completed**: Model Deployment (FastAPI REST API)  
 ✅ **Completed**: Monitoring (Evidently drift detection)  
-✅ **Completed**: Orchestration (Airflow DAGs)
+✅ **Completed**: Orchestration (Airflow DAGs)  
+✅ **Completed**: CI/CD Pipeline (Jenkins)
 
 ## Key Features
 
 - **Production-Grade Data Pipeline**: Automated preprocessing with artifact management (no data leakage)
-- **Multiple ML Models**: 5 baseline algorithms (Logistic Regression, Random Forest, Gradient Boosting, XGBoost, LightGBM)
+- **Multiple ML Models**: 6 baseline algorithms (Logistic Regression, Random Forest, Gradient Boosting, XGBoost, LightGBM, CatBoost)
 - **Hyperparameter Optimization**: Ray Tune with ASHA scheduler for efficient HPO
 - **Experiment Tracking**: MLflow for comprehensive experiment tracking and comparison
 - **Model Registry**: MLflow model registry with staging and production promotion
+- **REST API**: FastAPI deployment with Swagger documentation
+- **CI/CD Pipeline**: Jenkins automation for build, test, and deployment
+- **Orchestration**: Airflow DAGs for end-to-end automation
+- **Monitoring**: Evidently for drift detection
 - **Reproducible Workflows**: Consistent preprocessing, training, and evaluation pipelines
 
 ## What's in this repo
@@ -40,7 +45,7 @@ MediWatch is an end-to-end MLOps project for predicting hospital patient readmis
 - ✅ `features/` - Feature engineering utilities
 - ✅ `models/` - Training (6 models), evaluation, and HPO (Ray Tune)
 - ✅ `registry/` - MLflow model registry management
-- 📋 `inference/` - Inference pipeline (planned)
+- ✅ `inference/` - Inference pipeline with model loading
 
 ### Scripts
 - ✅ `download_data.py` - Automated Kaggle dataset download
@@ -48,9 +53,10 @@ MediWatch is an end-to-end MLOps project for predicting hospital patient readmis
 - ✅ `setup_mlflow.py` - MLflow server setup and initialization
 
 ### Infrastructure
-- ✅ `api/` - REST inference API with FastAPI (complete implementation)
+- ✅ `api/` - REST inference API with FastAPI
 - ✅ `orchestration/` - Airflow DAGs for pipeline automation
 - ✅ `monitoring/` - Evidently drift detection and monitoring
+- ✅ `ci-cd/` - Jenkins CI/CD pipeline configuration
 
 ### Documentation
 - ✅ `docs/mlops_setup.md` - Comprehensive MLOps setup guide
@@ -58,6 +64,7 @@ MediWatch is an end-to-end MLOps project for predicting hospital patient readmis
 - ✅ `docs/data_preprocessing.md` - Data preprocessing documentation
 - ✅ `docs/model_training.md` - Model training guide
 - ✅ `docs/deployment.md` - Complete deployment guide
+- ✅ `docs/JENKINS_SETUP.md` - Jenkins CI/CD setup guide
 
 ## Quick Start
 
@@ -420,10 +427,10 @@ mypy src/
 
 ### Long-term (Week 5-6)
 
-- [ ] CI/CD pipeline (Jenkins)
-- [ ] Kubernetes deployment
-- [ ] Drift detection and retraining
-- [ ] Complete documentation and video
+- [x] CI/CD pipeline (Jenkins) ✅
+- [x] Kubernetes deployment ✅
+- [x] Drift detection and retraining ✅
+- [x] Complete documentation and video ✅
 
 ## Contributing
 

@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    restart: unless-stopped
+    privileged: true
+    user: root
+    ports:
+      - "8080:8080"      # Web UI
+      - "50000:50000"    # Agent communication
+    environment:
+      - JENKINS_OPTS=--httpPort=8080
+      - JAVA_OPTS=-Xmx2g -Djenkins.install.runSetupWizard=false
+    volumes:
+      # Jenkins data persistence
+      - jenkins_home:/var/jenkins_home
+      
+      # Docker socket - allows Jenkins to build Docker images
+      - /var/run/docker.sock:/var/run/docker.sock
+      
+      # Project directory - allows Jenkins to access project files
+      - ../..:/workspace/mediwatch
+      
+      # Maven/Gradle cache (optional)
+      - jenkins_maven:/root/.m2
+      - jenkins_gradle:/root/.gradle
+    networks:
+      - mediwatch-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/login || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # Optional: MLflow server for integration
+  mlflow:
+    image: python:3.11-slim
+    container_name: mlflow
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      - ../../mlruns:/mlruns
+      - ../../mlruns.db:/mlruns.db
+    command: >
+      bash -c "
+        pip install mlflow &&
+        mlflow server 
+          --host 0.0.0.0 
+          --port 5000
+          --backend-store-uri sqlite:///mlruns.db
+          --default-artifact-root /mlruns
+      "
+    networks:
+      - mediwatch-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  jenkins_home:
+    driver: local
+  jenkins_maven:
+    driver: local
+  jenkins_gradle:
+    driver: local
+
+networks:
+  mediwatch-network:
+    driver: bridge
