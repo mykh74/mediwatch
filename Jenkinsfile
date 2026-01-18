@@ -13,18 +13,16 @@ pipeline {
     
     environment {
         // Docker Configuration
-        DOCKER_REGISTRY = credentials('docker-registry-url') ?: 'docker.io'
-        DOCKER_CREDENTIALS = credentials('docker-hub-credentials')
+        DOCKER_REGISTRY = 'docker.io'
         IMAGE_NAME = 'mediwatch-api'
         IMAGE_TAG = "${env.BUILD_NUMBER}"
         
         // MLflow Configuration
-        MLFLOW_TRACKING_URI = credentials('mlflow-tracking-uri') ?: 'http://localhost:5000'
+        MLFLOW_TRACKING_URI = 'http://host.docker.internal:5000'
         MODEL_NAME = 'mediwatch_readmission_classifier'
         MODEL_STAGE = 'Production'
         
         // Kubernetes Configuration (optional)
-        KUBECONFIG = credentials('kubeconfig') ?: ''
         NAMESPACE = 'mediwatch'
         
         // Deployment Mode: 'docker' or 'kubernetes'
