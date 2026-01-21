@@ -258,76 +258,20 @@ pipeline {
             }
             steps {
                 script {
-                    echo 'Deploying to Kubernetes...'
+                    echo "Deploying to Kubernetes cluster..."
+                    echo "Namespace: ${NAMESPACE}"
+                    echo "Image: ${FULL_IMAGE_NAME}"
+                    
                     sh """
-                        # Check kubectl
+                        # Verify kubectl access
                         kubectl version --client
+                        kubectl cluster-info
                         
-                        # Create namespace if not exists
-                        kubectl create namespace ${NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
+                        # Make deployment script executable
+                        chmod +x ci-cd/kubernetes/deploy.sh
                         
-                        # Update deployment with new image
-                        kubectl set image deployment/mediwatch-api \
-                            api=${FULL_IMAGE_NAME} \
-                            -n ${NAMESPACE} || {
-                            
-                            # If deployment doesn't exist, create it
-                            echo "Creating new deployment..."
-                            kubectl apply -f - <<EOF
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: mediwatch-api
-  namespace: ${NAMESPACE}
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: mediwatch-api
-  template:
-    metadata:
-      labels:
-        app: mediwatch-api
-    spec:
-      containers:
-      - name: api
-        image: ${FULL_IMAGE_NAME}
-        ports:
-        - containerPort: 8000
-        env:
-        - name: MLFLOW_TRACKING_URI
-          value: "${MLFLOW_TRACKING_URI}"
-        - name: MODEL_NAME
-          value: "${MODEL_NAME}"
-        - name: MODEL_STAGE
-          value: "${MODEL_STAGE}"
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8000
-          initialDelaySeconds: 30
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 8000
-          initialDelaySeconds: 10
-          periodSeconds: 5
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: mediwatch-api-service
-  namespace: ${NAMESPACE}
-spec:
-  selector:
-    app: mediwatch-api
-  ports:
-  - port: 80
-    targetPort: 8000
-  type: LoadBalancer
-EOF
-                        }
+                        # Run deployment script with image tag
+                        ./ci-cd/kubernetes/deploy.sh ${IMAGE_TAG}
                         
                         # Wait for rollout
                         kubectl rollout status deployment/mediwatch-api -n ${NAMESPACE}
@@ -354,13 +298,51 @@ EOF
                             echo "Smoke test passed!"
                         """
                     } else {
-                        echo "Kubernetes smoke test - checking service endpoint..."
+                        echo "Kubernetes smoke test - testing service endpoint..."
                         sh """
-                            # Get service endpoint
-                            kubectl get service mediwatch-api-service -n ${NAMESPACE}
+                            # Wait for LoadBalancer IP (timeout after 2 minutes)
+                            echo "Waiting for service endpoint..."
+                            timeout=120
+                            elapsed=0
                             
-                            # Note: For LoadBalancer, you may need to wait for external IP
-                            echo "Service deployed. Check Kubernetes dashboard for external IP."
+                            while [ \$elapsed -lt \$timeout ]; do
+                                EXTERNAL_IP=\$(kubectl get svc mediwatch-api-service -n ${NAMESPACE} -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || echo "")
+                                if [ -z "\$EXTERNAL_IP" ]; then
+                                    EXTERNAL_IP=\$(kubectl get svc mediwatch-api-service -n ${NAMESPACE} -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || echo "")
+                                fi
+                                
+                                if [ -n "\$EXTERNAL_IP" ]; then
+                                    echo "✓ Service endpoint available: \$EXTERNAL_IP"
+                                    
+                                    # Test health endpoint
+                                    echo "Testing health endpoint..."
+                                    curl -f http://\$EXTERNAL_IP/health || {
+                                        echo "Health check failed, trying with kubectl port-forward..."
+                                        kubectl port-forward -n ${NAMESPACE} svc/mediwatch-api-service 8888:80 &
+                                        sleep 5
+                                        curl -f http://localhost:8888/health
+                                        pkill -f "kubectl port-forward"
+                                    }
+                                    
+                                    echo "✓ Smoke test passed!"
+                                    exit 0
+                                fi
+                                
+                                echo "Waiting for LoadBalancer IP... (\$elapsed/\$timeout seconds)"
+                                sleep 10
+                                elapsed=\$((elapsed + 10))
+                            done
+                            
+                            # If LoadBalancer IP not available, test via port-forward
+                            echo "LoadBalancer IP not available, testing via port-forward..."
+                            kubectl port-forward -n ${NAMESPACE} svc/mediwatch-api-service 8888:80 &
+                            PF_PID=\$!
+                            sleep 10
+                            
+                            curl -f http://localhost:8888/health
+                            kill \$PF_PID
+                            
+                            echo "✓ Smoke test passed (via port-forward)"
                         """
                     }
                 }
