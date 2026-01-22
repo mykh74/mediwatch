@@ -1,0 +1,114 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: evidently
+  namespace: mediwatch
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: evidently
+  template:
+    metadata:
+      labels:
+        app: evidently
+    spec:
+      containers:
+      - name: evidently
+        image: python:3.11-slim
+        command:
+        - bash
+        - -c
+        - |
+          pip install --no-cache-dir evidently[ui]==0.4.12 fastapi uvicorn[standard] pandas scikit-learn
+          mkdir -p /app/reports /app/data
+          cat > /app/server.py << 'EOF'
+          from fastapi import FastAPI, File, UploadFile
+          from fastapi.responses import HTMLResponse, FileResponse
+          import uvicorn
+          import os
+          from pathlib import Path
+          
+          app = FastAPI(title="Evidently Monitoring Service")
+          
+          REPORTS_DIR = Path("/app/reports")
+          REPORTS_DIR.mkdir(exist_ok=True)
+          
+          @app.get("/")
+          async def root():
+              return {"message": "Evidently Monitoring Service", "status": "running"}
+          
+          @app.get("/health")
+          async def health():
+              return {"status": "healthy"}
+          
+          @app.get("/reports")
+          async def list_reports():
+              reports = [f.name for f in REPORTS_DIR.glob("*.html")]
+              return {"reports": reports}
+          
+          @app.get("/reports/{report_name}")
+          async def get_report(report_name: str):
+              report_path = REPORTS_DIR / report_name
+              if report_path.exists():
+                  return FileResponse(report_path)
+              return {"error": "Report not found"}
+          
+          @app.post("/upload-report")
+          async def upload_report(file: UploadFile = File(...)):
+              content = await file.read()
+              file_path = REPORTS_DIR / file.filename
+              with open(file_path, "wb") as f:
+                  f.write(content)
+              return {"message": "Report uploaded", "filename": file.filename}
+          
+          if __name__ == "__main__":
+              uvicorn.run(app, host="0.0.0.0", port=8000)
+          EOF
+          python /app/server.py
+        ports:
+        - containerPort: 8000
+        volumeMounts:
+        - name: reports
+          mountPath: /app/reports
+        - name: data
+          mountPath: /app/data
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 10
+      volumes:
+      - name: reports
+        persistentVolumeClaim:
+          claimName: evidently-reports-pvc
+      - name: data
+        persistentVolumeClaim:
+          claimName: evidently-data-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: evidently-service
+  namespace: mediwatch
+spec:
+  selector:
+    app: evidently
+  ports:
+  - port: 8000
+    targetPort: 8000
+  type: LoadBalancer

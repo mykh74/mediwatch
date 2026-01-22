@@ -1,0 +1,265 @@
+---
+# PostgreSQL for Airflow metadata
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airflow-postgres
+  namespace: mediwatch
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: airflow-postgres
+  template:
+    metadata:
+      labels:
+        app: airflow-postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:14
+        env:
+        - name: POSTGRES_USER
+          value: "airflow"
+        - name: POSTGRES_PASSWORD
+          value: "airflow"
+        - name: POSTGRES_DB
+          value: "airflow"
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - name: postgres-data
+          mountPath: /var/lib/postgresql/data
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+      volumes:
+      - name: postgres-data
+        persistentVolumeClaim:
+          claimName: airflow-postgres-pvc
+---
+# Airflow Webserver
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airflow-webserver
+  namespace: mediwatch
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: airflow-webserver
+  template:
+    metadata:
+      labels:
+        app: airflow-webserver
+    spec:
+      initContainers:
+      - name: wait-for-postgres
+        image: busybox:1.35
+        command:
+        - sh
+        - -c
+        - |
+          until nc -z airflow-postgres-service 5432; do
+            echo "Waiting for PostgreSQL...";
+            sleep 2;
+          done
+      - name: airflow-init
+        image: apache/airflow:2.8.1-python3.11
+        command:
+        - bash
+        - -c
+        - |
+          airflow db init
+          airflow users create \
+            --username admin \
+            --firstname Admin \
+            --lastname User \
+            --role Admin \
+            --email admin@mediwatch.com \
+            --password admin
+        env:
+        - name: AIRFLOW__CORE__EXECUTOR
+          value: "LocalExecutor"
+        - name: AIRFLOW__DATABASE__SQL_ALCHEMY_CONN
+          value: "postgresql+psycopg2://airflow:airflow@airflow-postgres-service:5432/airflow"
+        - name: AIRFLOW__CORE__FERNET_KEY
+          value: "46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho="
+        - name: AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION
+          value: "true"
+        - name: AIRFLOW__CORE__LOAD_EXAMPLES
+          value: "false"
+        - name: AIRFLOW__WEBSERVER__EXPOSE_CONFIG
+          value: "true"
+        volumeMounts:
+        - name: dags
+          mountPath: /opt/airflow/dags
+        - name: logs
+          mountPath: /opt/airflow/logs
+      containers:
+      - name: webserver
+        image: apache/airflow:2.8.1-python3.11
+        command:
+        - airflow
+        - webserver
+        ports:
+        - containerPort: 8080
+        env:
+        - name: AIRFLOW__CORE__EXECUTOR
+          value: "LocalExecutor"
+        - name: AIRFLOW__DATABASE__SQL_ALCHEMY_CONN
+          value: "postgresql+psycopg2://airflow:airflow@airflow-postgres-service:5432/airflow"
+        - name: AIRFLOW__CORE__FERNET_KEY
+          value: "46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho="
+        - name: AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION
+          value: "true"
+        - name: AIRFLOW__CORE__LOAD_EXAMPLES
+          value: "false"
+        - name: AIRFLOW__WEBSERVER__EXPOSE_CONFIG
+          value: "true"
+        - name: AIRFLOW__API__AUTH_BACKENDS
+          value: "airflow.api.auth.backend.basic_auth"
+        volumeMounts:
+        - name: dags
+          mountPath: /opt/airflow/dags
+        - name: logs
+          mountPath: /opt/airflow/logs
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+      volumes:
+      - name: dags
+        persistentVolumeClaim:
+          claimName: airflow-dags-pvc
+      - name: logs
+        persistentVolumeClaim:
+          claimName: airflow-logs-pvc
+---
+# Airflow Scheduler
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airflow-scheduler
+  namespace: mediwatch
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: airflow-scheduler
+  template:
+    metadata:
+      labels:
+        app: airflow-scheduler
+    spec:
+      initContainers:
+      - name: wait-for-webserver
+        image: busybox:1.35
+        command:
+        - sh
+        - -c
+        - |
+          until nc -z airflow-webserver-service 8080; do
+            echo "Waiting for Airflow webserver...";
+            sleep 5;
+          done
+      containers:
+      - name: scheduler
+        image: apache/airflow:2.8.1-python3.11
+        command:
+        - airflow
+        - scheduler
+        env:
+        - name: AIRFLOW__CORE__EXECUTOR
+          value: "LocalExecutor"
+        - name: AIRFLOW__DATABASE__SQL_ALCHEMY_CONN
+          value: "postgresql+psycopg2://airflow:airflow@airflow-postgres-service:5432/airflow"
+        - name: AIRFLOW__CORE__FERNET_KEY
+          value: "46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho="
+        - name: AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION
+          value: "true"
+        - name: AIRFLOW__CORE__LOAD_EXAMPLES
+          value: "false"
+        volumeMounts:
+        - name: dags
+          mountPath: /opt/airflow/dags
+        - name: logs
+          mountPath: /opt/airflow/logs
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+      volumes:
+      - name: dags
+        persistentVolumeClaim:
+          claimName: airflow-dags-pvc
+      - name: logs
+        persistentVolumeClaim:
+          claimName: airflow-logs-pvc
+---
+# PostgreSQL Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: airflow-postgres-service
+  namespace: mediwatch
+spec:
+  selector:
+    app: airflow-postgres
+  ports:
+  - port: 5432
+    targetPort: 5432
+  type: ClusterIP
+---
+# Airflow Webserver Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: airflow-webserver-service
+  namespace: mediwatch
+spec:
+  selector:
+    app: airflow-webserver
+  ports:
+  - port: 8080
+    targetPort: 8080
+  type: LoadBalancer
+---
+# Airflow Scheduler Service (for metrics, if needed)
+apiVersion: v1
+kind: Service
+metadata:
+  name: airflow-scheduler-service
+  namespace: mediwatch
+spec:
+  selector:
+    app: airflow-scheduler
+  ports:
+  - port: 8793
+    targetPort: 8793
+  type: ClusterIP

@@ -47,6 +47,8 @@ kubectl apply -f ci-cd/kubernetes/configmap.yaml
 # 3. Create storage (PVCs)
 echo "💾 Creating persistent volume claims..."
 kubectl apply -f ci-cd/kubernetes/storage/pvc.yaml
+kubectl apply -f ci-cd/kubernetes/airflow/pvc.yaml
+kubectl apply -f ci-cd/kubernetes/evidently/pvc.yaml
 
 # 4. Deploy MLflow (if not already deployed)
 if ! kubectl get deployment mlflow -n $NAMESPACE &> /dev/null; then
@@ -57,25 +59,54 @@ else
     echo "✓ MLflow already deployed"
 fi
 
-# 5. Update API deployment with new image
+# 5. Deploy Airflow (if not already deployed)
+if ! kubectl get deployment airflow-webserver -n $NAMESPACE &> /dev/null; then
+    echo "🔄 Deploying Airflow (PostgreSQL + Webserver + Scheduler)..."
+    kubectl apply -f ci-cd/kubernetes/airflow/deployment.yaml
+    wait_for_deployment airflow-postgres
+    wait_for_deployment airflow-webserver
+    wait_for_deployment airflow-scheduler
+else
+    echo "✓ Airflow already deployed"
+fi
+
+# 6. Deploy Evidently (if not already deployed)
+if ! kubectl get deployment evidently -n $NAMESPACE &> /dev/null; then
+    echo "📈 Deploying Evidently monitoring..."
+    kubectl apply -f ci-cd/kubernetes/evidently/deployment.yaml
+    wait_for_deployment evidently
+else
+    echo "✓ Evidently already deployed"
+fi
+
+# 7. Update API deployment with new image
 echo "🔌 Updating API deployment..."
 # Replace placeholder image in deployment manifest
 sed "s|PLACEHOLDER_IMAGE|localhost/mediwatch-api:$IMAGE_TAG|g" \
     ci-cd/kubernetes/api/deployment.yaml | kubectl apply -f -
 
-# 6. Apply Service and HPA
+# 8. Apply Service and HPA
 echo "🌐 Applying Service and HPA..."
 kubectl apply -f ci-cd/kubernetes/api/service.yaml
 kubectl apply -f ci-cd/kubernetes/api/hpa.yaml
 
-# 7. Wait for API deployment
+# 9. Wait for API deployment
 wait_for_deployment mediwatch-api
 
-# 8. Get service information
+# 10. Get service information
 echo ""
 echo "=================================================="
 echo "✅ Deployment Complete!"
 echo "=================================================="
+echo ""
+echo "📋 Service Endpoints:"
+echo "  • API:       http://localhost/ (LoadBalancer)"
+echo "  • MLflow:    Port-forward with: kubectl port-forward -n $NAMESPACE svc/mlflow-service 5000:5000"
+echo "  • Airflow:   Port-forward with: kubectl port-forward -n $NAMESPACE svc/airflow-webserver-service 8080:8080"
+echo "  • Evidently: Port-forward with: kubectl port-forward -n $NAMESPACE svc/evidently-service 8001:8000"
+echo ""
+echo "🔐 Default Credentials:"
+echo "  • Airflow: admin / admin"
 echo ""
 
 # Get service endpoint
