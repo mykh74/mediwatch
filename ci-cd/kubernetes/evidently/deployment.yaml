@@ -20,8 +20,9 @@ spec:
         - bash
         - -c
         - |
-          pip install --no-cache-dir evidently[ui]==0.4.12 fastapi uvicorn[standard] pandas scikit-learn
-          mkdir -p /app/reports /app/data
+          apt-get update && apt-get install -y gcc g++ && \
+          pip install --no-cache-dir evidently==0.4.12 fastapi uvicorn[standard] pandas scikit-learn && \
+          mkdir -p /app/reports /app/data && \
           cat > /app/server.py << 'EOF'
           from fastapi import FastAPI, File, UploadFile
           from fastapi.responses import HTMLResponse, FileResponse
@@ -75,11 +76,11 @@ spec:
           mountPath: /app/data
         resources:
           requests:
-            memory: "512Mi"
-            cpu: "250m"
+            memory: "256Mi"
+            cpu: "100m"
           limits:
-            memory: "2Gi"
-            cpu: "1000m"
+            memory: "1Gi"
+            cpu: "500m"
         livenessProbe:
           httpGet:
             path: /health
