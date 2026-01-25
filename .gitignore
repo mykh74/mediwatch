@@ -30,3 +30,4 @@ dist/
 .history/
 MediWatch.txt
 models/
+logs/

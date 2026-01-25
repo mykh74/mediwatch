@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: C:\ProgramData\chocolatey\lib\kubernetes-kompose\tools\kompose.exe convert
+    kompose.version: 1.38.0 (a8f5d1cbd)
+  labels:
+    io.kompose.service: airflow-dag-processor
+  name: airflow-dag-processor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: airflow-dag-processor
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: C:\ProgramData\chocolatey\lib\kubernetes-kompose\tools\kompose.exe convert
+        kompose.version: 1.38.0 (a8f5d1cbd)
+      labels:
+        io.kompose.service: airflow-dag-processor
+    spec:
+      containers:
+        - args:
+            - dag-processor
+          env:
+            - name: AIRFLOW_CONFIG
+              value: /opt/airflow/config/airflow.cfg
+            - name: AIRFLOW__CELERY__BROKER_URL
+              value: redis://:@redis:6379/0
+            - name: AIRFLOW__CELERY__RESULT_BACKEND
+              value: db+postgresql://airflow:airflow@postgres/airflow
+            - name: AIRFLOW__CORE__AUTH_MANAGER
+              value: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
+            - name: AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION
+              value: "true"
+            - name: AIRFLOW__CORE__EXECUTION_API_SERVER_URL
+              value: http://airflow-apiserver:8080/execution/
+            - name: AIRFLOW__CORE__EXECUTOR
+              value: CeleryExecutor
+            - name: AIRFLOW__CORE__FERNET_KEY
+            - name: AIRFLOW__CORE__LOAD_EXAMPLES
+              value: "true"
+            - name: AIRFLOW__DATABASE__SQL_ALCHEMY_CONN
+              value: postgresql+psycopg2://airflow:airflow@postgres/airflow
+            - name: AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK
+              value: "true"
+            - name: _PIP_ADDITIONAL_REQUIREMENTS
+          envFrom:
+            - configMapRef:
+                name: env
+          image: apache/airflow:3.1.6
+          livenessProbe:
+            exec:
+              command:
+                - airflow jobs check --job-type DagProcessorJob --hostname "${HOSTNAME}"
+            failureThreshold: 5
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 10
+          name: airflow-dag-processor
+          securityContext:
+            runAsGroup: 0
+            runAsUser: 42395
+          volumeMounts:
+            - mountPath: /opt/airflow/config
+              name: airflow-dag-processor-cm2
+            - mountPath: /opt/airflow/plugins
+              name: airflow-dag-processor-claim3
+      restartPolicy: Always
+      volumes:
+        - configMap:
+            name: airflow-dag-processor-cm2
+          name: airflow-dag-processor-cm2
+        - name: airflow-dag-processor-claim3
+          persistentVolumeClaim:
+            claimName: airflow-dag-processor-claim3
