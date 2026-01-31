@@ -7,6 +7,16 @@ data:
   metadataConnection:
     user: airflow_user
     pass: MyAppPassword123
-    host: localhost
+    host: postgres-postgresql.default.svc.cluster.local
     port: 5432
-    dbId: airflow_db
+    db: airflow_db
+
+# Sync DAGs from a Git repository
+dags:
+  gitSync:
+    enabled: true
+    # Replace this with your Git repository URL
+    repo: https://github.com/apache/airflow.git
+    branch: main
+    # The folder in your repo where DAGs are located (leave empty if they are at the root)
+    subPath: airflow/example_dags
