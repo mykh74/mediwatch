@@ -1,8 +1,0 @@
-apiVersion: v1
-data:
-  AIRFLOW_UID: "42395"
-kind: ConfigMap
-metadata:
-  labels:
-    io.kompose.service: airflow-apiserver-env
-  name: env

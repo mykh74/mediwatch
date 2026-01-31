@@ -1,0 +1,9 @@
+auth:
+  # 1. The Superuser (Default admin)
+  enablePostgresUser: true
+  postgresPassword: "ThisIsOnlyATestPassword"
+
+  # 2. Your Application User
+  username: "airflow_user"
+  password: "MyAppPassword123"
+  database: "airflow_db"

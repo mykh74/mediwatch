@@ -1,0 +1,12 @@
+# Disable the creation of the Postgres pod
+postgresql:
+  enabled: false
+
+# Point Airflow to your preexisting database
+data:
+  metadataConnection:
+    user: airflow_user
+    pass: MyAppPassword123
+    host: localhost
+    port: 5432
+    dbId: airflow_db
