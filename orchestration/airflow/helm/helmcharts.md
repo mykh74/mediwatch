@@ -20,6 +20,20 @@ kubectl delete pvc data-postgres-postgresql-0
 ```
 
 airflow:
+
+before starting airflow, you need to set the secret values to authenticate with github:
+replace <YOUR_GITHUB_PERSONAL_ACCESS_TOKEN> with your github personal access token
+
+```
+kubectl create secret generic airflow-git-credentials `
+  --from-literal=GIT_SYNC_USERNAME=PeterMoras `
+  --from-literal=GIT_SYNC_PASSWORD=<YOUR_GITHUB_PERSONAL_ACCESS_TOKEN> `
+  --from-literal=GITSYNC_USERNAME=PeterMoras `
+  --from-literal=GITSYNC_PASSWORD=<YOUR_GITHUB_PERSONAL_ACCESS_TOKEN> `
+  -n airflow
+```
+
+
 ```
 helm repo add apache-airflow https://airflow.apache.org
 helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace -f airflow-values.yml

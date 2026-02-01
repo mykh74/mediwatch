@@ -4,19 +4,19 @@ postgresql:
 
 # Point Airflow to your preexisting database
 data:
-  metadataConnection:
-    user: airflow_user
-    pass: MyAppPassword123
-    host: postgres-postgresql.default.svc.cluster.local
-    port: 5432
-    db: airflow_db
+  metadataSecretName: airflow-db-secret
 
 # Sync DAGs from a Git repository
 dags:
   gitSync:
     enabled: true
-    # Replace this with your Git repository URL
-    repo: https://github.com/apache/airflow.git
+    # Use HTTPS instead of SSH for better compatibility
+    repo: https://github.com/PeterMoras/mediwatch-DAGs.git
     branch: main
     # The folder in your repo where DAGs are located (leave empty if they are at the root)
-    subPath: airflow/example_dags
+    subPath: ""
+    # Credentials for HTTPS authentication
+    credentialsSecret: airflow-git-credentials
+    # GitHub's public SSH key to prevent man-in-the-middle attacks
+    knownHosts: |
+      github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
