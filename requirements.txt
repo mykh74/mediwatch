@@ -21,7 +21,7 @@ seaborn>=0.13
 plotly>=5.18
 
 # Experiment tracking and monitoring
-# evidently>=0.4
+evidently>=0.4.23
 
 # Jupyter for notebooks
 jupyter>=1.0

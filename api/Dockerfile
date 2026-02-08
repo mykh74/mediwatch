@@ -25,6 +25,7 @@ RUN pip install --upgrade pip && \
 
 COPY src /app/src
 COPY api /app/api
+COPY scripts /opt/scripts
 COPY pyproject.toml /app/pyproject.toml
 
 # Install the package in editable mode for simple imports

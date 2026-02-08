@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: api
-        image: PLACEHOLDER_IMAGE
+        image: mediwatch-api:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8000

@@ -1,0 +1,114 @@
+# Evidently Drift Detection Configuration for MediWatch
+#
+# This configuration defines thresholds and alerting rules for data drift detection
+
+drift_detection:
+  # Data paths
+  reference_data: "/data/processed/train.csv"
+  current_data: "/data/processed/test.csv"
+  
+  # Target column
+  target_column: "readmitted"
+  
+  # Output directory for drift reports
+  output_dir: "/models/drift_reports"
+  
+  # Drift thresholds
+  thresholds:
+    # Maximum allowed share of drifted features (0.0 - 1.0)
+    # If more than 30% of features show drift, trigger alert
+    max_drift_share: 0.30
+    
+    # Maximum allowed missing values
+    max_missing_values: 1000
+    
+    # Feature-level drift thresholds
+    # Drift detection uses statistical tests (e.g., Kolmogorov-Smirnov for numerical)
+    # and chi-squared test for categorical features
+    feature_drift_threshold: 0.1  # p-value threshold
+  
+  # Alert settings
+  alerts:
+    # Whether to fail pipeline if severe drift detected
+    fail_on_severe_drift: false
+    
+    # Whether to send notifications
+    notify_on_drift: true
+    
+    # Notification channels
+    notification_channels:
+      - console  # Print to logs
+      # - slack    # Send to Slack (requires webhook)
+      # - email    # Send email (requires SMTP)
+  
+  # Monitoring settings
+  monitoring:
+    # MLflow experiment for drift tracking
+    mlflow_experiment: "mediwatch_drift_detection"
+    
+    # Whether to log drift reports to MLflow
+    log_to_mlflow: true
+    
+    # Retention policy for drift reports (days)
+    report_retention_days: 90
+  
+  # Feature groups for targeted drift monitoring
+  feature_groups:
+    demographic:
+      - age
+      - gender
+      - race
+    
+    medical:
+      - num_medications
+      - num_lab_procedures
+      - num_procedures
+      - time_in_hospital
+    
+    diagnosis:
+      - admission_type_id
+      - discharge_disposition_id
+      - admission_source_id
+
+# Report configuration
+reporting:
+  # Report formats to generate
+  formats:
+    - html
+    - json
+  
+  # Metrics to include in reports
+  metrics:
+    - data_drift
+    - data_quality
+    - target_drift
+    - column_drift
+    - missing_values
+  
+  # Whether to include visualizations
+  include_visualizations: true
+  
+  # Dashboard update frequency
+  dashboard_update_frequency: "hourly"
+
+# Advanced settings
+advanced:
+  # Statistical test settings
+  stat_tests:
+    numerical:
+      method: "ks"  # Kolmogorov-Smirnov
+      threshold: 0.05
+    
+    categorical:
+      method: "chisquare"  # Chi-squared
+      threshold: 0.05
+  
+  # Drift detection sensitivity
+  # Options: low, medium, high
+  sensitivity: "medium"
+  
+  # Whether to detect concept drift (changes in target distribution)
+  detect_concept_drift: true
+  
+  # Whether to detect prediction drift
+  detect_prediction_drift: false  # Requires predictions on current data

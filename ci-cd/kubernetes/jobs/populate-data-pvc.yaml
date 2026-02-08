@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: populate-data-pvc
+  namespace: mediwatch
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    metadata:
+      labels:
+        app: data-populator
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: data-copier
+        image: busybox:latest
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            echo "Creating directory structure..."
+            mkdir -p /data/processed /data/raw
+            echo "Directories created"
+            ls -la /data/
+            echo "Waiting for data to be copied..."
+            sleep 3600
+        volumeMounts:
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: mediwatch-data-pvc

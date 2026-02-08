@@ -21,7 +21,7 @@ spec:
         - -c
         - |
           apt-get update && apt-get install -y gcc g++ && \
-          pip install --no-cache-dir evidently==0.4.12 fastapi uvicorn[standard] pandas scikit-learn && \
+          pip install --no-cache-dir evidently==0.4.12 fastapi uvicorn[standard] pandas scikit-learn python-multipart && \
           mkdir -p /app/reports /app/data && \
           cat > /app/server.py << 'EOF'
           from fastapi import FastAPI, File, UploadFile
