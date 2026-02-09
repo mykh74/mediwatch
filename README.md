@@ -245,16 +245,29 @@ MediWatch/
 ### Monitoring ✅
 
 - **Evidently Integration**:
-  - Data drift detection
+  - Data drift detection with statistical tests
   - Target drift monitoring
-  - Model performance tracking
-  - Automated report generation
-  - Quick drift check API
-- **Monitoring Reports**:
+  - Data quality checks
+  - Feature-level drift analysis
+  - Automated report generation (HTML + JSON)
+  - MLflow integration for drift tracking
+  - Configurable thresholds and alerts
+- **Drift Detection**:
+  - KubernetesPodOperator in Airflow pipeline
+  - Compares reference vs current data
+  - Detects dataset-level and feature-level drift
+  - Logs drift metrics to MLflow
   - HTML reports with visualizations
+  - JSON metrics for programmatic access
+- **Monitoring Reports**:
+  - Interactive HTML dashboards
   - Drift metrics and thresholds
   - Missing value detection
-  - Feature distribution comparison
+  - Feature distribution comparisons
+  - Statistical test results
+- **Documentation**:
+  - [Complete Drift Detection Guide](docs/DRIFT_DETECTION.md)
+  - [Quick Reference](docs/DRIFT_QUICK_REFERENCE.md)
 
 ### Orchestration ✅
 

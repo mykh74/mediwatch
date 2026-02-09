@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: check-model
+  namespace: mediwatch
+spec:
+  ttlSecondsAfterFinished: 120
+  template:
+    metadata:
+      labels:
+        app: model-checker
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: checker
+        image: busybox:latest
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            echo "Checking models directory..."
+            ls -lh /models/
+            if [ -f /models/metrics.json ]; then
+              echo "=== Metrics ==="
+              cat /models/metrics.json
+            fi
+        volumeMounts:
+        - name: models
+          mountPath: /models
+      volumes:
+      - name: models
+        persistentVolumeClaim:
+          claimName: mediwatch-models-pvc

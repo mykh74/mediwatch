@@ -27,13 +27,13 @@ pipeline {
         NAMESPACE = 'mediwatch'
         
         // Deployment Mode: 'docker' or 'kubernetes'
-        DEPLOY_MODE = "${params.DEPLOY_MODE ?: 'docker'}"
+        DEPLOY_MODE = "${params.DEPLOY_MODE ?: 'kubernetes'}"
     }
     
     parameters {
         choice(
             name: 'DEPLOY_MODE',
-            choices: ['docker', 'kubernetes'],
+            choices: ['kubernetes', 'docker'],
             description: 'Deployment target: docker (local/docker-compose) or kubernetes'
         )
         booleanParam(

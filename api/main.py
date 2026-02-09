@@ -29,6 +29,15 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Import preprocessing function
+try:
+    from mediwatch.data.preprocess import apply_preprocessing
+    PREPROCESSING_AVAILABLE = True
+    logger.info("✓ Preprocessing module loaded")
+except ImportError as e:
+    logger.warning(f"Preprocessing module not available: {e}")
+    PREPROCESSING_AVAILABLE = False
+
 # Initialize FastAPI app
 app = FastAPI(
     title="MediWatch API",
@@ -57,6 +66,72 @@ PREPROCESSING_ARTIFACTS_PATH = os.getenv(
 # Global model and preprocessing artifacts
 model = None
 preprocessing_artifacts = None
+
+
+def preprocess_input(data: dict) -> pd.DataFrame:
+    """Preprocess raw input data using saved artifacts.
+    
+    Args:
+        data: Raw patient data dictionary
+        
+    Returns:
+        Preprocessed DataFrame ready for model prediction
+        
+    Raises:
+        ValueError: If preprocessing artifacts not loaded or preprocessing fails
+    """
+    if preprocessing_artifacts is None:
+        raise ValueError("Preprocessing artifacts not loaded")
+    
+    if not PREPROCESSING_AVAILABLE:
+        raise ValueError("Preprocessing module not available")
+    
+    # Convert input to DataFrame
+    df = pd.DataFrame([data])
+    
+    # Apply preprocessing pipeline
+    try:
+        processed_df = apply_preprocessing(
+            df=df,
+            artifacts=preprocessing_artifacts,
+            target_col=None  # No target column for inference
+        )
+        logger.debug(f"Preprocessed features shape: {processed_df.shape}")
+        return processed_df
+    except Exception as e:
+        logger.error(f"Preprocessing failed: {e}")
+        raise ValueError(f"Preprocessing failed: {str(e)}")
+
+
+def preprocess_input(data: dict) -> pd.DataFrame:
+    """Preprocess raw input data using saved artifacts.
+    
+    Args:
+        data: Raw patient data dictionary
+        
+    Returns:
+        Preprocessed DataFrame ready for model prediction
+    """
+    if preprocessing_artifacts is None:
+        raise ValueError("Preprocessing artifacts not loaded")
+    
+    if not PREPROCESSING_AVAILABLE:
+        raise ValueError("Preprocessing module not available")
+    
+    # Convert input to DataFrame
+    df = pd.DataFrame([data])
+    
+    # Apply preprocessing pipeline
+    try:
+        processed_df = apply_preprocessing(
+            df=df,
+            artifacts=preprocessing_artifacts,
+            target_col=None  # No target column for inference
+        )
+        return processed_df
+    except Exception as e:
+        logger.error(f"Preprocessing failed: {e}")
+        raise ValueError(f"Preprocessing failed: {str(e)}")
 
 
 @app.on_event("startup")
@@ -166,9 +241,15 @@ def predict_simple(request: dict):
             detail="Model not loaded"
         )
     
+    if preprocessing_artifacts is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Preprocessing artifacts not loaded"
+        )
+    
     try:
-        # Convert request to DataFrame
-        features_df = pd.DataFrame([request])
+        # Preprocess input data
+        features_df = preprocess_input(request)
         
         # Make prediction (binary classification)
         prediction = model.predict(features_df)[0]
@@ -210,10 +291,18 @@ async def predict_v1(request: dict):
             detail="Model not loaded"
         )
     
+    if preprocessing_artifacts is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Preprocessing artifacts not loaded"
+        )
+    
     try:
         # Extract features
         features = request.get('features', request)
-        features_df = pd.DataFrame([features])
+        
+        # Preprocess input data
+        features_df = preprocess_input(features)
         
         # Make prediction (binary classification)
         prediction = model.predict(features_df)[0]
@@ -254,6 +343,12 @@ async def predict_batch_v1(request: dict):
             detail="Model not loaded"
         )
     
+    if preprocessing_artifacts is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Preprocessing artifacts not loaded"
+        )
+    
     patients = request.get('patients', [])
     
     if len(patients) > 100:
@@ -266,7 +361,8 @@ async def predict_batch_v1(request: dict):
         predictions = []
         
         for patient in patients:
-            features_df = pd.DataFrame([patient])
+            # Preprocess input data
+            features_df = preprocess_input(patient)
             prediction = model.predict(features_df)[0]
             probability = model.predict_proba(features_df)[0]
             
