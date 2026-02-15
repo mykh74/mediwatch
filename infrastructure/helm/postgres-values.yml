@@ -1,0 +1,2 @@
+auth:
+  database: airflow_db

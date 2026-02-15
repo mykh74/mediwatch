@@ -1,5 +1,0 @@
-auth:
-  username: airflow_user
-  password: MyAppPassword123
-  database: airflow_db
-  postgresPassword: SuperSecretPostgresPassword
