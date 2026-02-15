@@ -5,8 +5,8 @@ pipeline {
         // Jenkins Credentials Binding
         // 'postgres-app-creds': ID for Username/Password credential (e.g. airflow_user / <password>)
         // 'postgres-admin-pass': ID for Secret Text credential (postgres superuser password)
-        POSTGRES_APP = credentials('postgres-app-creds')
-        POSTGRES_ADMIN = credentials('postgres-admin-pass')
+        POSTGRES_APP = credentials('postgres-user-account')
+        POSTGRES_ADMIN = credentials('postgres-admin-password')
     }
 
     stages {
