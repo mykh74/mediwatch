@@ -15,7 +15,15 @@ pipeline {
                 checkout scm
             }
         }
-
+        stage('Install Helm') {
+            steps {
+                script {
+                    if (sh(script: 'command -v helm', returnStatus: true) != 0) {
+                        sh 'curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash'
+                    }
+                }
+            }
+        }
         stage('Deploy Postgres') {
             steps {
                 script {
