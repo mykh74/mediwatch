@@ -2,6 +2,8 @@ pipeline {
     agent {
         docker { 
             image 'alpine/helm:3.12.0' // Use a specific version for stability
+
+            args '-u root --entrypoint=' # Run as root to allow Helm to use entrypoint for commands
         }
     }
 
