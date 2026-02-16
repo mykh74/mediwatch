@@ -9,11 +9,15 @@ pipeline {
 
     environment {
         // Jenkins Credentials Binding
-        // 'postgres-app-creds': ID for Username/Password credential (e.g. airflow_user / <password>)
-        // 'postgres-admin-pass': ID for Secret Text credential (postgres superuser password)
+
+        GITHUB_ACCESS = credentials('github-account-token') // GitHub Personal Access Token for github access, used for Airflow Git Sync
         POSTGRES_APP = credentials('postgres-user-account')
         POSTGRES_ADMIN = credentials('postgres-admin-password')
-        KUBECONFIG = credentials('local-kube-config') // File credential for kubeconfig
+        KUBECONFIG = credentials('local-kube-config') // File credential for kubeconfig. Automatically used by kubectl/helm when KUBECONFIG env var is set to the file path provided by Jenkins.
+    
+        DB_HOST = 'postgres-postgresql' // Service name for Postgres in Kubernetes
+        DB_NAME = 'airflow_db'
+
     }
 
     stages {
@@ -45,8 +49,55 @@ pipeline {
                                     --set auth.username=${POSTGRES_APP_USR} \
                                     --set auth.password=${POSTGRES_APP_PSW} \
                                     --set auth.postgresPassword=${POSTGRES_ADMIN} \
+                                    --set auth.database=${DB_NAME} \
                                     --wait
                             '''
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Deploy Airflow') {
+            steps {
+
+                withCredentials([file(credentialsId: 'local-kube-config', variable: 'KUBECONFIG_PATH')]) {
+                    script{
+                        // Construct the SQLAlchemy connection string
+                        // Format: postgresql://user:password@host:port/database
+                        // Note: If your password has special characters, it must be URL-encoded.
+                        def dbConnection = "postgresql://${POSTGRES_APP_USR}:${POSTGRES_APP_PSW}@${DB_HOST}:5432/${DB_NAME}"
+                        
+                        // 3. Create the Kubernetes Secret
+                        // The 'airflow-values.yml' points to 'airflow-db-secret'.
+                        // The official Airflow chart expects the key 'connection' inside this secret.
+                        sh """
+                            kubectl create secret generic airflow-db-secret \
+                            --from-literal=connection="${dbConnection}" \
+                            --dry-run=client -o yaml | kubectl apply -f -
+                        """
+
+
+                        // Create a Kubernetes secret for Airflow to access Postgres using the Jenkins credentials
+                        sh '''
+                            kubectl create secret generic airflow-git-credentials `
+                                --from-literal=GIT_SYNC_USERNAME=${GITHUB_ACCESS_USR} `
+                                --from-literal=GIT_SYNC_PASSWORD=${GITHUB_ACCESS_PSW} `
+                                --from-literal=GITSYNC_USERNAME=${GITHUB_ACCESS_USR} `
+                                --from-literal=GITSYNC_PASSWORD=${GITHUB_ACCESS_PSW} `
+                                -n airflow
+                        '''
+                    }
+                    script {
+                        dir('infrastructure/helm') {
+                            sh 'helm repo add apache-airflow https://airflow.apache.org'
+                            sh 'helm repo update'
+                            
+
+                            // Deploy Airflow using Helm with the airflow-values.yml configuration
+                            // Using 'upgrade --install' ensures idempotency
+                            sh 'helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace -f airflow-values.yml'
+                            
                         }
                     }
                 }
