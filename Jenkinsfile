@@ -65,7 +65,7 @@ pipeline {
                     // Construct the SQLAlchemy connection string
                     // Format: postgresql://user:password@host:port/database
                     // Note: If your password has special characters, it must be URL-encoded.
-                    def dbConnection = 'postgresql://${POSTGRES_APP_USR}:${POSTGRES_APP_PSW}@${DB_HOST}:5432/${DB_NAME}'
+                    def dbConnection = "postgresql://${POSTGRES_APP_USR}:${POSTGRES_APP_PSW}@${DB_HOST}:5432/${DB_NAME}"
                     
                     // Ensure the namespace exists before creating secrets in it
                     sh 'kubectl create namespace airflow --dry-run=client -o yaml | kubectl apply -f -'
