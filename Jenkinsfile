@@ -32,14 +32,14 @@ pipeline {
 
                         // Deploy Postgres using Helm, injecting secrets from Jenkins credentials
                         // Using 'upgrade --install' ensures idempotency
-                        sh """
+                        sh '''
                             helm upgrade --install postgres bitnami/postgresql \
                                 -f postgres-values.yml \
                                 --set auth.username=${POSTGRES_APP_USR} \
                                 --set auth.password=${POSTGRES_APP_PSW} \
                                 --set auth.postgresPassword=${POSTGRES_ADMIN} \
                                 --wait
-                        """
+                        '''
                     }
                 }
             }
