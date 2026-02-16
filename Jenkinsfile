@@ -17,7 +17,7 @@ pipeline {
         // File credential for kubeconfig. Automatically used by kubectl/helm when KUBECONFIG env var is set to the file path provided by Jenkins.
         KUBECONFIG = credentials('local-kube-config') 
     
-        DB_HOST = 'postgres-postgresql' // Service name for Postgres in Kubernetes
+        DB_HOST = 'postgres-postgresql.default.svc.cluster.local' // Service name for Postgres in Kubernetes
         DB_NAME = 'airflow_db'
 
     }
