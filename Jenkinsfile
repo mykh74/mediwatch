@@ -24,7 +24,7 @@ pipeline {
             steps {
                 script {
                     // Navigate to the helm directory relative to repo root
-                    dir('orchestration/airflow/helm') {
+                    dir('infrastructure/helm') {
                         sh 'helm repo add bitnami https://charts.bitnami.com/bitnami'
                         sh 'helm repo update'
 
@@ -32,7 +32,7 @@ pipeline {
                         // Using 'upgrade --install' ensures idempotency
                         sh """
                             helm upgrade --install postgres bitnami/postgresql \
-                                -f orchestration/airflow/helm/postgres-values.yml \
+                                -f postgres-values.yml \
                                 --set auth.username=${POSTGRES_APP_USR} \
                                 --set auth.password=${POSTGRES_APP_PSW} \
                                 --set auth.postgresPassword=${POSTGRES_ADMIN} \
