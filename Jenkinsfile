@@ -191,7 +191,7 @@ pipeline {
             }
             steps {
                 script {
-                    dir('infrastructure/evidently/evidently-app') {
+                    dir('infrastructure/evidently') {
                         // sh 'helm repo add evidently https://evidentlyai.github.io/helm-charts'
                         // sh 'helm repo update'
 
