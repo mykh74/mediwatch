@@ -84,40 +84,41 @@ pipeline {
                 }
                 stage('Deploy to Airflow'){
                     steps{
-                        // Confirm Github token provides access to the repository
-                        sh label: 'Checking GitHub access with provided token', script: '''
-                            curl -H "Authorization: token ${GITHUB_ACCESS_PSW}" \
-                            -H "Accept: application/vnd.github.v3+json" \
-                            https://api.github.com/repos/mykh74/mediwatch \
-                            | jq 'has("status") | not' || true
-                        '''
-                        dir('infrastructure') {
-                            // Create namespace and secrets for Airflow, then apply kustomization file
-                            sh 'kubectl create namespace airflow --dry-run=client -o yaml | kubectl apply -f -'
-                            def dbConnection = 'postgresql://${POSTGRES_APP_USR}:${POSTGRES_APP_PSW}@${DB_HOST}:5432/${DB_NAME}'
-                            writeFile file: 'db-secret.env', text: 'connection=${dbConnection}'
-                            writeFile file: 'git-secret.env', text: '''
-                                GIT_SYNC_USERNAME=${GITHUB_ACCESS_USR}
-                                GIT_SYNC_PASSWORD=${GITHUB_ACCESS_PSW}
-                                GITSYNC_USERNAME=${GITHUB_ACCESS_USR}
-                                GITSYNC_PASSWORD=${GITHUB_ACCESS_PSW}
+                        script{// Confirm Github token provides access to the repository
+                            sh label: 'Checking GitHub access with provided token', script: '''
+                                curl -H "Authorization: token ${GITHUB_ACCESS_PSW}" \
+                                -H "Accept: application/vnd.github.v3+json" \
+                                https://api.github.com/repos/mykh74/mediwatch \
+                                | jq 'has("status") | not' || true
                             '''
-                            sh 'kubectl apply -k .'
-                            sh 'rm db-secret.env git-secret.env'
-                        }
-                        //echo 'Deploying airflow with Helm (named step)'
-                        dir('infrastructure/helm') {
-                            sh label: 'Deploying Airflow with Helm', script: '''
-                                helm repo add apache-airflow https://airflow.apache.org || true
-                                helm repo update
-                                helm upgrade --install airflow apache-airflow/airflow \
-                                    --namespace airflow \
-                                    --create-namespace \
-                                    -f airflow-values.yml
-                            '''
-                            // sh 'helm repo add apache-airflow https://airflow.apache.org || true'
-                            // sh 'helm repo update'
-                            // sh 'helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace -f airflow-values.yml'
+                            dir('infrastructure') {
+                                // Create namespace and secrets for Airflow, then apply kustomization file
+                                sh 'kubectl create namespace airflow --dry-run=client -o yaml | kubectl apply -f -'
+                                def dbConnection = 'postgresql://${POSTGRES_APP_USR}:${POSTGRES_APP_PSW}@${DB_HOST}:5432/${DB_NAME}'
+                                writeFile file: 'db-secret.env', text: 'connection=${dbConnection}'
+                                writeFile file: 'git-secret.env', text: '''
+                                    GIT_SYNC_USERNAME=${GITHUB_ACCESS_USR}
+                                    GIT_SYNC_PASSWORD=${GITHUB_ACCESS_PSW}
+                                    GITSYNC_USERNAME=${GITHUB_ACCESS_USR}
+                                    GITSYNC_PASSWORD=${GITHUB_ACCESS_PSW}
+                                '''
+                                sh 'kubectl apply -k .'
+                                sh 'rm db-secret.env git-secret.env'
+                            }
+                            //echo 'Deploying airflow with Helm (named step)'
+                            dir('infrastructure/helm') {
+                                sh label: 'Deploying Airflow with Helm', script: '''
+                                    helm repo add apache-airflow https://airflow.apache.org || true
+                                    helm repo update
+                                    helm upgrade --install airflow apache-airflow/airflow \
+                                        --namespace airflow \
+                                        --create-namespace \
+                                        -f airflow-values.yml
+                                '''
+                                // sh 'helm repo add apache-airflow https://airflow.apache.org || true'
+                                // sh 'helm repo update'
+                                // sh 'helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace -f airflow-values.yml'
+                            }
                         }
 
                     }
