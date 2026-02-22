@@ -166,7 +166,6 @@ pipeline {
  
                         sh """
                         helm upgrade --install evidently-worker ./evidently-app --namespace evidently --create-namespace \
-
                             --set resources.requests.memory=2Gi
                         """
                     }
