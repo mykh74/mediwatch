@@ -81,7 +81,8 @@ pipeline {
                     """
 
 
-                    // Create a Kubernetes secret for Airflow to access Git using the Jenkins credentials
+                    // Create a Kubernetes secret for Airflow to access Github with gitsync for the DAG list
+                    //  using the Jenkins credentials
                     sh '''
                         kubectl create secret generic airflow-git-credentials \
                             --from-literal=GIT_SYNC_USERNAME=${GITHUB_ACCESS_USR} \

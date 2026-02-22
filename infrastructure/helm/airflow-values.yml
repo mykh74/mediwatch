@@ -12,9 +12,9 @@ dags:
     enabled: true
     # Use HTTPS instead of SSH for better compatibility
     repo: https://github.com/PeterMoras/mediwatch-DAGs.git
-    branch: main
+    branch: pmoras-manual
     # The folder in your repo where DAGs are located (leave empty if they are at the root)
-    subPath: ""
+    subPath: "dags"
     # Credentials for HTTPS authentication
     credentialsSecret: airflow-git-credentials
     # GitHub's public SSH key to prevent man-in-the-middle attacks
