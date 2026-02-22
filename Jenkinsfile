@@ -1,5 +1,11 @@
 pipeline {
-    agent any // Use 'none' to define agents at the stage level for more granular control
+    agent {
+        docker { 
+            image 'dtzar/helm-kubectl:3.12.0' // Use an image with both Helm and Kubectl
+            //mount docker socket to allow Helm to use the host's Docker daemon for building images (if needed in the future)
+            args '-u root --entrypoint= -v ${KUBECONFIG}:${KUBECONFIG}:ro'  // Run as root to allow Helm to use entrypoint for commands
+        }
+    }
     // agent {
     //     docker { 
     //         image 'dtzar/helm-kubectl:3.12.0' // Use an image with both Helm and Kubectl
