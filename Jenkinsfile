@@ -1,12 +1,12 @@
 pipeline {
-    agent {
-        docker { 
-            image 'dtzar/helm-kubectl:3.12.0' // Use an image with both Helm and Kubectl
+    // agent {
+    //     docker { 
+    //         image 'dtzar/helm-kubectl:3.12.0' // Use an image with both Helm and Kubectl
 
-            args '-u root --entrypoint='  // Run as root to allow Helm to use entrypoint for commands
-        }
-    }
-
+    //         args '-u root --entrypoint='  // Run as root to allow Helm to use entrypoint for commands
+    //     }
+    // }
+    agent none // Run stages on different agents as needed
     environment {
         // Jenkins Credentials Binding
 
@@ -66,6 +66,13 @@ pipeline {
         }
 
         stage('Deploy Airflow') {
+            agent {
+                docker { 
+                    image 'dtzar/helm-kubectl:3.12.0' // Use an image with both Helm and Kubectl
+
+                    args '-u root --entrypoint='  // Run as root to allow Helm to use entrypoint for commands
+                }
+            }
             steps {
 
                 script{
