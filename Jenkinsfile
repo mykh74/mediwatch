@@ -36,7 +36,7 @@ pipeline {
                                //airflowImage.push("airflow-custom:${env.BUILD_ID}")
                                // airflowImage.push()
                                 //Push to docker registry
-                                docker.withRegistry('localhost', '') {
+                                docker.withRegistry('http://host.docker.internal:5000', '') {
                                     airflowImage.push("latest")
                                 }
                             }
