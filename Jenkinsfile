@@ -62,6 +62,16 @@ pipeline {
             steps {
 
                 script{
+                    // Confirm Github token provides access to the repository by making a simple API call
+                    sh '''
+                        curl -H "Authorization: token ${GITHUB_ACCESS_PSW}" \
+                        -H "Accept: application/vnd.github.v3+json" \
+                        https://api.github.com/repos/mykh74/mediwatch \
+                        | jq 'has("status") | not'
+                    '''
+                }
+
+                script{
                     // Construct the SQLAlchemy connection string
                     // Format: postgresql://user:password@host:port/database
                     // Note: If your password has special characters, it must be URL-encoded.
