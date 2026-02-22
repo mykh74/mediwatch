@@ -30,6 +30,13 @@ pipeline {
         }
         
         stage('Deploy Postgres') {
+            agent {
+                docker { 
+                    image 'dtzar/helm-kubectl:3.12.0' // Use an image with both Helm and Kubectl
+
+                    args '-u root --entrypoint='  // Run as root to allow Helm to use entrypoint for commands
+                }
+            }
             steps {
 
                 script {
