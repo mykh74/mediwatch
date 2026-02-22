@@ -118,14 +118,16 @@ pipeline {
             agent {
                 docker { 
                     image 'docker:latest' 
-                    args '-u root --entrypoint= -v /var/run/docker.sock:/var/run/docker.sock' 
+                    args "-u root --privileged --entrypoint='' -v /var/run/docker.sock:/var/run/docker.sock"
                 }
             }
             steps {
                 script {
                     dir('infrastructure/evidently/docker') {
-                        // Build the Docker image for the Evidently worker
+                        // Debug: confirm docker client + socket availability, then build
                         sh '''
+                            docker version || true
+                            ls -l /var/run/docker.sock || true
                             docker build -t evidently-worker:latest -f Dockerfile .
                         '''
                     }
