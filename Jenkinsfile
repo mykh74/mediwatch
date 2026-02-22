@@ -34,11 +34,11 @@ pipeline {
                             //    airflowImage.tag("airflow-custom:${env.BUILD_ID}")
                             //    airflowImage.tag("airflow-custom:latest")
                                //airflowImage.push("airflow-custom:${env.BUILD_ID}")
-                               airflowImage.push()
+                               // airflowImage.push()
                                 //Push to docker registry
-                                // docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
-                                //     airflowImage.push("latest")
-                                // }
+                                docker.withRegistry('localhost', '') {
+                                    airflowImage.push("latest")
+                                }
                             }
                         }
                     }
