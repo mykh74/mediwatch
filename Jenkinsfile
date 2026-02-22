@@ -126,7 +126,7 @@ pipeline {
                 script {
                     sh 'echo "Building Evidently Docker image with Kaniko (no daemon needed)"'
                 }
-                container('kaniko'){
+                script {
                     dir('infrastructure/evidently/docker') {
                         // Use Kaniko to build Docker images without a daemon
                         // Kaniko can run in any container; it creates images from scratch
