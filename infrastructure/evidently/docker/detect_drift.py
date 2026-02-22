@@ -1,20 +1,23 @@
 import sys
 import json
+import pandas as pd
 import mlflow
-from evidently.report import Report
-from evidently.metric_preset import DataDriftPreset
+from evidently import Report
+from evidently.metrics import *
+from evidently.presets import *
 
 def run_monitoring(ref_path, cur_path):
-    # Load data (simplified for example)
-    # ref = pd.read_csv(ref_path) ...
+    # Load data
+    ref = pd.read_csv(ref_path)
+    cur = pd.read_csv(cur_path)
     
     report = Report(metrics=[DataDriftPreset()])
-    report.run(reference_data=ref_path, current_data=cur_path)
+    report.run(reference_data=ref, current_data=cur)
     
     # Log to MLflow
     with mlflow.start_run(run_name="Drift_Detection"):
         metrics = report.as_dict()
-        drift_score = metrics['metrics'][0]['result']['share_of_drifting_columns']
+        drift_score = metrics['metrics'][0]['result']['share_of_drifted_columns']
         mlflow.log_metric("drift_share", drift_score)
         
         # Write to Airflow XCom location
