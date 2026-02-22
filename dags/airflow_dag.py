@@ -1,5 +1,6 @@
 from airflow import DAG
-from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import KubernetesPodOperator
+from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
+
 from datetime import datetime
 
 with DAG("evidently_drift_check", start_date=datetime.now(), schedule="@daily") as dag:
