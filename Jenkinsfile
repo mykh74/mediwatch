@@ -115,16 +115,11 @@ pipeline {
             }
         }
         stage('Build Evidently docker Image') {
-            agent {
-                docker { 
-                    image 'docker:latest' 
-                    args "-u root --privileged --entrypoint='' -v /var/run/docker.sock:/var/run/docker.sock"
-                }
-            }
+            agent any
             steps {
                 script {
                     dir('infrastructure/evidently/docker') {
-                        // Debug: confirm docker client + socket availability, then build
+                        // Run the build on the Jenkins host so it uses the host Docker daemon
                         sh '''
                             docker version || true
                             ls -l /var/run/docker.sock || true
