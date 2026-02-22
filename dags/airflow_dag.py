@@ -1,0 +1,20 @@
+from airflow import DAG
+from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import KubernetesPodOperator
+from datetime import datetime
+
+with DAG("evidently_drift_check", start_date=datetime.now(), schedule="@daily") as dag:
+
+    check_drift = KubernetesPodOperator(
+        task_id="run_evidently_drift_check",
+        name="evidently-drift-pod",
+        namespace="airflow-workers",
+        image="your-registry/evidently-worker:latest",
+        # Pass data paths as arguments
+        arguments=[],
+        # Enable XCom to pass the 'drift_detected' flag back to Airflow
+        do_xcom_push=True,
+        # Ensure the pod cleans up after running
+        is_delete_operator_pod=True,
+        # Environment variables for MLflow or AWS
+        env_vars={"MLFLOW_TRACKING_URI": "http://mlflow:5000"}
+    )

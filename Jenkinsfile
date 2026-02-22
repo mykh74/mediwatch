@@ -114,5 +114,37 @@ pipeline {
                 }
             }
         }
+        stage('Build Evidently docker Image') {
+            steps {
+                script {
+                    dir('infrastructure/evidently/docker') {
+                    // Build the Docker image for the Evidently worker
+                    sh '''
+                        docker build -t evidently-worker:latest -f Dockerfile .
+                    '''
+                }
+            }
+        }
+        stage('Deploy Evidently Worker') {
+            steps {
+                script {
+                    dir('infrastructure/evidently/evidently-app') {
+                        // sh 'helm repo add evidently https://evidentlyai.github.io/helm-charts'
+                        // sh 'helm repo update'
+
+                        // // Deploy the Evidently worker using Helm with the values.yaml configuration
+                        // // Using 'upgrade --install' ensures idempotency
+                        // sh 'helm upgrade --install evidently-worker evidently/evidently-worker --namespace airflow --create-namespace -f values.yaml'
+
+                        sh """
+                        helm upgrade --install evidently-worker ./evidently-app --namespace evidently --create-namespace \
+                            --set image.tag=${BUILD_ID} \
+                            --set resources.requests.memory=2Gi
+                        """
+                    }
+                }
+            }
+        }
+        
     }
 }

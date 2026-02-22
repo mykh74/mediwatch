@@ -1,0 +1,13 @@
+image:
+  repository: evidently-worker
+  tag: "latest"
+  pullPolicy: Never # Crucial for Docker Desktop!
+
+resources:
+  requests:
+    memory: "1Gi"
+    cpu: "500m"
+
+env:
+  MLFLOW_TRACKING_URI: "localhost:5000"
+  DATA_PATH: "s3://my-bucket/training-data"
