@@ -1,11 +1,12 @@
 pipeline {
-    agent {
-        docker { 
-            image 'dtzar/helm-kubectl:3.12.0' // Use an image with both Helm and Kubectl
-            //mount docker socket to allow Helm to use the host's Docker daemon for building images (if needed in the future)
-             args '-u root --entrypoint= -v /var/run/docker.sock:/var/run/docker.sock'  // Run as root to allow Helm to use entrypoint for commands
-        }
-    }
+    agent none // Use 'none' to define agents at the stage level for more granular control
+    // agent {
+    //     docker { 
+    //         image 'dtzar/helm-kubectl:3.12.0' // Use an image with both Helm and Kubectl
+    //         //mount docker socket to allow Helm to use the host's Docker daemon for building images (if needed in the future)
+    //          args '-u root --entrypoint= -v /var/run/docker.sock:/var/run/docker.sock'  // Run as root to allow Helm to use entrypoint for commands
+    //     }
+    // }
 
     environment {
         // Jenkins Credentials Binding
@@ -24,12 +25,20 @@ pipeline {
 
     stages {
         stage('Checkout') {
+            agent any
             steps {
                 checkout scm
             }
         }
         
         stage('Deploy Postgres') {
+            agent {
+                docker { 
+                    image 'dtzar/helm-kubectl:3.12.0' // Use an image with both Helm and Kubectl
+                    //mount docker socket to allow Helm to use the host's Docker daemon for building images (if needed in the future)
+                    args '-u root --entrypoint= -v /var/run/docker.sock:/var/run/docker.sock'  // Run as root to allow Helm to use entrypoint for commands
+                }
+            }
             steps {
 
                 script {
@@ -59,6 +68,13 @@ pipeline {
         }
 
         stage('Deploy Airflow') {
+            agent {
+                docker { 
+                    image 'dtzar/helm-kubectl:3.12.0' // Use an image with both Helm and Kubectl
+                    //mount docker socket to allow Helm to use the host's Docker daemon for building images (if needed in the future)
+                    args '-u root --entrypoint= -v /var/run/docker.sock:/var/run/docker.sock'  // Run as root to allow Helm to use entrypoint for commands
+                }
+            }
             steps {
 
                 script{
@@ -115,13 +131,12 @@ pipeline {
             }
         }
         stage('Build Evidently docker Image') {
-            // agent {
-            //     docker { 
-            //         image 'dtzar/helm-kubectl:3.12.0' // Use an image with both Helm and Kubectl
-
-            //         args '-u root --entrypoint='  // Run as root to allow Helm to use entrypoint for commands
-            //     }
-            // }
+            agent {
+                docker {
+                    image 'docker:latest'
+                    args '-v /var/run/docker.sock:/var/run/docker.sock'
+                }
+            }
             steps {
                 script {
                     sh 'echo "Building Evidently Docker image with Dockerfile (requires Docker daemon)"'
@@ -164,6 +179,13 @@ pipeline {
             }
         }
         stage('Deploy Evidently Worker') {
+            agent {
+                docker { 
+                    image 'dtzar/helm-kubectl:3.12.0' // Use an image with both Helm and Kubectl
+                    //mount docker socket to allow Helm to use the host's Docker daemon for building images (if needed in the future)
+                    args '-u root --entrypoint= -v /var/run/docker.sock:/var/run/docker.sock'  // Run as root to allow Helm to use entrypoint for commands
+                }
+            }
             steps {
                 script {
                     dir('infrastructure/evidently/evidently-app') {
