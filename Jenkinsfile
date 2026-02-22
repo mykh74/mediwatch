@@ -43,32 +43,30 @@ pipeline {
                         }
                     }
                 }
-                
-            }
-        }
-        stage('Build Evidently docker Image') {
-            agent {
-                docker {
-                    image 'docker:latest'
-                    args '-u root --entrypoint= -v /var/run/docker.sock:/var/run/docker.sock'
-                }
-            }
-          
-            steps {
-                script {
-                   
-                    dir('infrastructure/evidently/docker') {
-                        // Build the Docker image using the Dockerfile in the specified directory
-                        sh label: 'Building Evidently Docker image', script: '''
-                            docker build -t evidently-worker:latest .
-                        '''
-                        // sh 'docker tag evidently-worker:${BUILD_ID} evidently-worker:latest'
+                stage('Build Evidently docker Image') {
+                    agent {
+                        docker {
+                            image 'docker:latest'
+                            args '-u root --entrypoint= -v /var/run/docker.sock:/var/run/docker.sock'
+                        }
                     }
-                    
+                
+                    steps {
+                        script {
+                        
+                            dir('infrastructure/evidently/docker') {
+                                // Build the Docker image using the Dockerfile in the specified directory
+                                sh label: 'Building Evidently Docker image', script: '''
+                                    docker build -t evidently-worker:latest .
+                                '''
+                                // sh 'docker tag evidently-worker:${BUILD_ID} evidently-worker:latest'
+                            }
+                        }
+                    }
                 }
-
             }
         }
+        
         
         stage('Deploy') {
             agent {
