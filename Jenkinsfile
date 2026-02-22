@@ -41,13 +41,16 @@ pipeline {
                 }
                 stage('Build Evidently docker Image') {
                     steps{
-                        dir('infrastructure/evidently/docker') {
-                            def evidentlyImage = docker.build("evidently-worker:latest", "./")
-                            docker.withRegistry('http://host.docker.internal:5000', '') {
-                                evidentlyImage.push("latest")
-                                evidentlyImage.push("evidently-worker:${env.BUILD_ID}")
+                        script{
+                            dir('infrastructure/evidently/docker') {
+                                def evidentlyImage = docker.build("evidently-worker:latest", "./")
+                                docker.withRegistry('http://host.docker.internal:5000', '') {
+                                    evidentlyImage.push("latest")
+                                    evidentlyImage.push("evidently-worker:${env.BUILD_ID}")
+                                }
                             }
                         }
+                        
                     }
 
                 }
