@@ -115,16 +115,43 @@ pipeline {
             }
         }
         stage('Build Evidently docker Image') {
-            agent {
-                docker { 
-                    image 'dtzar/helm-kubectl:3.12.0' // Use an image with both Helm and Kubectl
+            // agent {
+            //     docker { 
+            //         image 'dtzar/helm-kubectl:3.12.0' // Use an image with both Helm and Kubectl
 
-                    args '-u root --entrypoint='  // Run as root to allow Helm to use entrypoint for commands
-                }
-            }
+            //         args '-u root --entrypoint='  // Run as root to allow Helm to use entrypoint for commands
+            //     }
+            // }
             steps {
                 script {
                     sh 'echo "Building Evidently Docker image with Kaniko (no daemon needed)"'
+                }
+                container('kaniko'){
+                    dir('infrastructure/evidently/docker') {
+                        // Use Kaniko to build Docker images without a daemon
+                        // Kaniko can run in any container; it creates images from scratch
+                        sh '''
+                            # Download Kaniko executor if not present
+                            if [ ! -f /tmp/executor ]; then
+                              mkdir -p /tmp
+                              wget -q -O /tmp/executor https://github.com/GoogleContainerTools/kaniko/releases/download/v1.20.0/executor-linux-amd64
+                              chmod +x /tmp/executor
+                            fi
+                            
+                            # Build image with Kaniko (saves to /tmp/image.tar)
+                            /tmp/executor \
+                              --dockerfile=Dockerfile \
+                              --context . \
+                              --destination=evidently-worker:latest \
+                              --tar-path=/tmp/image.tar \
+                              --no-push
+                              
+                            # Load image into host Docker daemon (if available)
+                            if [ -S /var/run/docker.sock ]; then
+                              docker load -i /tmp/image.tar || true
+                            fi
+                        '''
+                    }
                 }
                 script {
                     dir('infrastructure/evidently/docker') {
