@@ -115,10 +115,19 @@ pipeline {
             }
         }
         stage('Build Evidently docker Image') {
+            agent {
+                docker {
+                    image 'docker:29.2.1'
+                    args '-v /var/run/docker.sock:/var/run/docker.sock'
+                }
+            }
             steps {
                 script {
+                    sh 'echo "Running docker agent with docker socket mounted for building images"'
+                }
+                script {
                     dir('infrastructure/evidently/docker') {
-                        // Run the build on the Jenkins host so it uses the host Docker daemon
+                        // Mount the host Docker socket directly; no privileged needed
                         sh '''
                             docker version || true
                             ls -l /var/run/docker.sock || true
