@@ -32,7 +32,7 @@ pipeline {
                                def airflowImage = docker.build("airflow-custom:latest", "./airflow")
                                 //Push to docker registry
                                 docker.withRegistry('http://host.docker.internal:5000', '') {
-                                    airflowImage.push("airflow-custom:latest")
+                                    airflowImage.push()
                                     //airflowImage.push("airflow-custom:${env.BUILD_ID}")
                                 }
                             }
@@ -40,21 +40,21 @@ pipeline {
                     }
                 }
 
-                stage('Build Evidently docker Image') {
-                    steps{
-                        script{
-                            dir('infrastructure/evidently/docker') {
-                                def evidentlyImage = docker.build("evidently-worker:latest", "./")
-                                docker.withRegistry('http://host.docker.internal:5000', '') {
-                                    evidentlyImage.push("evidently-worker:latest")
-                                    //evidentlyImage.push("evidently-worker:${env.BUILD_ID}")
-                                }
-                            }
-                        }
+                // stage('Build Evidently docker Image') {
+                //     steps{
+                //         script{
+                //             dir('infrastructure/evidently/docker') {
+                //                 def evidentlyImage = docker.build("evidently-worker:latest", "./")
+                //                 docker.withRegistry('http://host.docker.internal:5000', '') {
+                //                     evidentlyImage.push()
+                //                     //evidentlyImage.push("evidently-worker:${env.BUILD_ID}")
+                //                 }
+                //             }
+                //         }
                         
-                    }
+                //     }
 
-                }
+                // }
             }
         }
         
