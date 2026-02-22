@@ -131,28 +131,22 @@ pipeline {
             }
         }
         stage('Build Evidently docker Image') {
-            // agent {
-            //     docker {
-            //         image 'docker:latest'
-            //         args '-v /var/run/docker.sock:/var/run/docker.sock'
-            //     }
-            // }
             agent {
-                docker { 
-                    image 'dtzar/helm-kubectl:3.12.0' // Use an image with both Helm and Kubectl
-                    //mount docker socket to allow Helm to use the host's Docker daemon for building images (if needed in the future)
-                    args '-u root --entrypoint= -v ${KUBECONFIG}:${KUBECONFIG}:ro'  // Run as root to allow Helm to use entrypoint for commands
+                docker {
+                    image 'docker:latest'
+                    args '-u root --entrypoint= -v /var/run/docker.sock:/var/run/docker.sock'
                 }
             }
+          
             steps {
                 script {
-                    docker.image('docker:latest').inside('-v /var/run/docker.sock:/var/run/docker.sock') {
-                        sh 'echo "Building Evidently Docker image with Dockerfile (requires Docker daemon)"'
-                        dir('infrastructure/evidently/docker') {
-                            // Build the Docker image using the Dockerfile in the specified directory
-                            sh 'docker build -t evidently-worker:latest .'
-                        }
+                   
+                    sh 'echo "Building Evidently Docker image with Dockerfile (requires Docker daemon)"'
+                    dir('infrastructure/evidently/docker') {
+                        // Build the Docker image using the Dockerfile in the specified directory
+                        sh 'docker build -t evidently-worker:latest .'
                     }
+                    
                 }
 
                 // script {
