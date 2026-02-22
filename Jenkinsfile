@@ -46,6 +46,7 @@ pipeline {
                             docker.withRegistry('http://host.docker.internal:5000', '') {
                                 evidentlyImage.push("latest")
                                 evidentlyImage.push("evidently-worker:${env.BUILD_ID}")
+                            }
                         }
                     }
 
