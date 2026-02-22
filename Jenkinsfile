@@ -32,21 +32,22 @@ pipeline {
                                def airflowImage = docker.build("airflow-custom:latest", "./airflow")
                                 //Push to docker registry
                                 docker.withRegistry('http://host.docker.internal:5000', '') {
-                                    airflowImage.push("latest")
-                                    airflowImage.push("airflow-custom:${env.BUILD_ID}")
+                                    airflowImage.push("airflow-custom:latest")
+                                    //airflowImage.push("airflow-custom:${env.BUILD_ID}")
                                 }
                             }
                         }
                     }
                 }
+
                 stage('Build Evidently docker Image') {
                     steps{
                         script{
                             dir('infrastructure/evidently/docker') {
                                 def evidentlyImage = docker.build("evidently-worker:latest", "./")
                                 docker.withRegistry('http://host.docker.internal:5000', '') {
-                                    evidentlyImage.push("latest")
-                                    evidentlyImage.push("evidently-worker:${env.BUILD_ID}")
+                                    evidentlyImage.push("evidently-worker:latest")
+                                    //evidentlyImage.push("evidently-worker:${env.BUILD_ID}")
                                 }
                             }
                         }
