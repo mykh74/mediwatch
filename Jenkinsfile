@@ -30,39 +30,25 @@ pipeline {
                         script{
                             dir('infrastructure/helm') {
                                def airflowImage = docker.build("airflow-custom:latest", "./airflow")
-
-                            //    airflowImage.tag("airflow-custom:${env.BUILD_ID}")
-                            //    airflowImage.tag("airflow-custom:latest")
-                               //airflowImage.push("airflow-custom:${env.BUILD_ID}")
-                               // airflowImage.push()
                                 //Push to docker registry
                                 docker.withRegistry('http://host.docker.internal:5000', '') {
                                     airflowImage.push("latest")
+                                    airflowImage.push("airflow-custom:${env.BUILD_ID}")
                                 }
                             }
                         }
                     }
                 }
                 stage('Build Evidently docker Image') {
-                    agent {
-                        docker {
-                            image 'docker:latest'
-                            args '-u root --entrypoint= -v /var/run/docker.sock:/var/run/docker.sock'
+                    steps{
+                        dir('infrastructure/evidently/docker') {
+                            def evidentlyImage = docker.build("evidently-worker:latest", "./")
+                            docker.withRegistry('http://host.docker.internal:5000', '') {
+                                evidentlyImage.push("latest")
+                                evidentlyImage.push("evidently-worker:${env.BUILD_ID}")
                         }
                     }
-                
-                    steps {
-                        script {
-                        
-                            dir('infrastructure/evidently/docker') {
-                                // Build the Docker image using the Dockerfile in the specified directory
-                                sh label: 'Building Evidently Docker image', script: '''
-                                    docker build -t evidently-worker:latest .
-                                '''
-                                // sh 'docker tag evidently-worker:${BUILD_ID} evidently-worker:latest'
-                            }
-                        }
-                    }
+
                 }
             }
         }
@@ -76,7 +62,7 @@ pipeline {
                 }
             }
             stages{
-                stage('Deploy to Postgress') {
+                stage('Deploy Postgress') {
                     //echo 'Deploying Postgres (named step)'
                     steps{
 
@@ -122,9 +108,9 @@ pipeline {
                             }
                             //echo 'Deploying airflow with Helm (named step)'
                             dir('infrastructure/helm') {
+                                sh 'helm repo add apache-airflow https://airflow.apache.org || true'
+                                sh 'helm repo update'
                                 sh label: 'Deploying Airflow with Helm', script: '''
-                                    helm repo add apache-airflow https://airflow.apache.org || true
-                                    helm repo update
                                     helm upgrade --install airflow apache-airflow/airflow \
                                         --namespace airflow \
                                         --create-namespace \

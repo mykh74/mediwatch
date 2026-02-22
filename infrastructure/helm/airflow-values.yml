@@ -1,6 +1,6 @@
 images:
   airflow:
-    repository: airflow-custom
+    repository: http://host.docker.internal:5000/airflow-custom
     tag: latest
     pullPolicy: Never # Crucial for Docker Desktop!
 
