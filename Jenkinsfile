@@ -72,37 +72,34 @@ pipeline {
                 }
 
                 script{
-                    // Construct the SQLAlchemy connection string
-                    // Format: postgresql://user:password@host:port/database
-                    // Note: If your password has special characters, it must be URL-encoded.
-                    def dbConnection = 'postgresql://${POSTGRES_APP_USR}:${POSTGRES_APP_PSW}@${DB_HOST}:5432/${DB_NAME}'
-                    
-                    // Ensure the namespace exists before creating secrets in it
-                    sh 'kubectl create namespace airflow --dry-run=client -o yaml | kubectl apply -f -'
+                    //Generate secret file for Kustomization and load secrets securely that way
 
-                    // 3. Create the Kubernetes Secret
-                    // The 'airflow-values.yml' points to 'airflow-db-secret'.
-                    // The official Airflow chart expects the key 'connection' inside this secret.
-                    sh """
-                        kubectl create secret generic airflow-db-secret \
-                        --from-literal=connection="${dbConnection}" \
-                        -n airflow \
-                        --dry-run=client -o yaml | kubectl apply -f -
-                    """
+                    // Use Kustomize to generate secrets idempotently
+                    dir('infrastructure') {
+                        // Ensure the namespace exists before creating secrets in it
+                        sh 'kubectl create namespace airflow --dry-run=client -o yaml | kubectl apply -f -'
 
+                        // Create .env file for the database secret from Jenkins credentials
+                        def dbConnection = "postgresql://${POSTGRES_APP_USR}:${POSTGRES_APP_PSW}@${DB_HOST}:5432/${DB_NAME}"
+                        writeFile file: 'db-secret.env', text: "connection=${dbConnection}"
 
-                    // Create a Kubernetes secret for Airflow to access Github with gitsync for the DAG list
-                    //  using the Jenkins credentials
-                    sh '''
-                        kubectl create secret generic airflow-git-credentials \
-                            --from-literal=GIT_SYNC_USERNAME=${GITHUB_ACCESS_USR} \
-                            --from-literal=GIT_SYNC_PASSWORD=${GITHUB_ACCESS_PSW} \
-                            --from-literal=GITSYNC_USERNAME=${GITHUB_ACCESS_USR} \
-                            --from-literal=GITSYNC_PASSWORD=${GITHUB_ACCESS_PSW} \
-                            -n airflow \
-                            --dry-run=client -o yaml | kubectl apply -f -
-                    '''
+                        // Create .env file for the git credentials secret from Jenkins credentials
+                        writeFile file: 'git-secret.env', text: """
+                            GIT_SYNC_USERNAME=${GITHUB_ACCESS_USR}
+                            GIT_SYNC_PASSWORD=${GITHUB_ACCESS_PSW}
+                            GITSYNC_USERNAME=${GITHUB_ACCESS_USR}
+                            GITSYNC_PASSWORD=${GITHUB_ACCESS_PSW}
+                        """
+
+                        // Apply the kustomization to create/update secrets
+                        // This uses the kustomization.yml file in the 'infrastructure' directory
+                        sh 'kubectl apply -k .'
+
+                        // Clean up the temporary secret files
+                        sh 'rm db-secret.env git-secret.env'
+                    }
                 }
+
                 script {
                     dir('infrastructure/helm') {
                         sh 'helm repo add apache-airflow https://airflow.apache.org'
