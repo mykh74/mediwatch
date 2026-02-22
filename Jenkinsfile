@@ -115,7 +115,6 @@ pipeline {
             }
         }
         stage('Build Evidently docker Image') {
-            agent any
             steps {
                 script {
                     dir('infrastructure/evidently/docker') {
