@@ -80,16 +80,16 @@ pipeline {
                         sh 'kubectl create namespace airflow --dry-run=client -o yaml | kubectl apply -f -'
 
                         // Create .env file for the database secret from Jenkins credentials
-                        def dbConnection = "postgresql://${POSTGRES_APP_USR}:${POSTGRES_APP_PSW}@${DB_HOST}:5432/${DB_NAME}"
-                        writeFile file: 'db-secret.env', text: "connection=${dbConnection}"
+                        def dbConnection = 'postgresql://${POSTGRES_APP_USR}:${POSTGRES_APP_PSW}@${DB_HOST}:5432/${DB_NAME}'
+                        writeFile file: 'db-secret.env', text: 'connection=${dbConnection}'
 
                         // Create .env file for the git credentials secret from Jenkins credentials
-                        writeFile file: 'git-secret.env', text: """
+                        writeFile file: 'git-secret.env', text: '''
                             GIT_SYNC_USERNAME=${GITHUB_ACCESS_USR}
                             GIT_SYNC_PASSWORD=${GITHUB_ACCESS_PSW}
                             GITSYNC_USERNAME=${GITHUB_ACCESS_USR}
                             GITSYNC_PASSWORD=${GITHUB_ACCESS_PSW}
-                        """
+                        '''
 
                         // Apply the kustomization to create/update secrets
                         // This uses the kustomization.yml file in the 'infrastructure' directory
