@@ -1,12 +1,5 @@
 pipeline {
     agent any
-    // agent {
-    //     docker { 
-    //         image 'dtzar/helm-kubectl:3.12.0' // Use an image with both Helm and Kubectl
-    //         //mount docker socket to allow Helm to use the host's Docker daemon for building images (if needed in the future)
-    //          args '-u root --entrypoint= -v /var/run/docker.sock:/var/run/docker.sock'  // Run as root to allow Helm to use entrypoint for commands
-    //     }
-    // }
 
     environment {
         // Jenkins Credentials Binding
@@ -28,6 +21,29 @@ pipeline {
             agent any
             steps {
                 checkout scm
+            }
+        }
+        stage('Build Docker Images'){
+            stages{
+                stage('Build Airflow Docker Image'){
+                    steps{
+                        script{
+                            dir('infrastructure/helm') {
+                               def airflowImage = docker.build("airflow-custom:latest", "./airflow")
+
+                            //    airflowImage.tag("airflow-custom:${env.BUILD_ID}")
+                            //    airflowImage.tag("airflow-custom:latest")
+                               //airflowImage.push("airflow-custom:${env.BUILD_ID}")
+                               airflowImage.push()
+                                //Push to docker registry
+                                // docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
+                                //     airflowImage.push("latest")
+                                // }
+                            }
+                        }
+                    }
+                }
+                
             }
         }
         stage('Build Evidently docker Image') {
