@@ -1,5 +1,5 @@
 # Use the official version that matches your current Helm deployment
-FROM apache/airflow:2.7.1 
+FROM apache/airflow:3.1.7 
 
 # Switch to root to install system dependencies (if needed)
 USER root
@@ -9,5 +9,5 @@ USER airflow
 
 # Install the Kubernetes provider and any other libraries you need
 RUN pip install --no-cache-dir \
-    apache-airflow-providers-cncf-kubernetes==8.0.0 \
-    kubernetes==28.1.0
+    apache-airflow-providers-cncf-kubernetes==10.12.4 \
+    kubernetes==35.0.0
