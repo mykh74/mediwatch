@@ -118,10 +118,11 @@ pipeline {
             steps {
                 script {
                     dir('infrastructure/evidently/docker') {
-                    // Build the Docker image for the Evidently worker
-                    sh '''
-                        docker build -t evidently-worker:latest -f Dockerfile .
-                    '''
+                        // Build the Docker image for the Evidently worker
+                        sh '''
+                            docker build -t evidently-worker:latest -f Dockerfile .
+                        '''
+                    }
                 }
             }
         }
