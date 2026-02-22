@@ -9,5 +9,5 @@ resources:
     cpu: "500m"
 
 env:
-  MLFLOW_TRACKING_URI: "localhost:5000"
+  MLFLOW_TRACKING_URI: "localhost:5432"
   DATA_PATH: "s3://my-bucket/training-data"

@@ -145,40 +145,11 @@ pipeline {
                     dir('infrastructure/evidently/docker') {
                         // Build the Docker image using the Dockerfile in the specified directory
                         sh 'docker build -t evidently-worker:latest .'
+                        // sh 'docker tag evidently-worker:${BUILD_ID} evidently-worker:latest'
                     }
                     
                 }
 
-                // script {
-                //     sh 'echo "Building Evidently Docker image with Kaniko (no daemon needed)"'
-                // }
-                // script {
-                //     dir('infrastructure/evidently/docker') {
-                //         // Use Kaniko to build Docker images without a daemon
-                //         // Kaniko can run in any container; it creates images from scratch
-                //         sh '''
-                //             # Download Kaniko executor if not present
-                //             if [ ! -f /tmp/executor ]; then
-                //               mkdir -p /tmp
-                //               wget -q -O /tmp/executor https://github.com/GoogleContainerTools/kaniko/releases/download/v1.20.0/executor-linux-amd64
-                //               chmod +x /tmp/executor
-                //             fi
-                            
-                //             # Build image with Kaniko (saves to /tmp/image.tar)
-                //             /tmp/executor \
-                //               --dockerfile=Dockerfile \
-                //               --context . \
-                //               --destination=evidently-worker:latest \
-                //               --tar-path=/tmp/image.tar \
-                //               --no-push
-                              
-                //             # Load image into host Docker daemon (if available)
-                //             if [ -S /var/run/docker.sock ]; then
-                //               docker load -i /tmp/image.tar || true
-                //             fi
-                //         '''
-                //     }
-                // }
             }
         }
         stage('Deploy Evidently Worker') {
@@ -192,16 +163,10 @@ pipeline {
             steps {
                 script {
                     dir('infrastructure/evidently') {
-                        // sh 'helm repo add evidently https://evidentlyai.github.io/helm-charts'
-                        // sh 'helm repo update'
-
-                        // // Deploy the Evidently worker using Helm with the values.yaml configuration
-                        // // Using 'upgrade --install' ensures idempotency
-                        // sh 'helm upgrade --install evidently-worker evidently/evidently-worker --namespace airflow --create-namespace -f values.yaml'
-
+ 
                         sh """
                         helm upgrade --install evidently-worker ./evidently-app --namespace evidently --create-namespace \
-                            --set image.tag=${BUILD_ID} \
+
                             --set resources.requests.memory=2Gi
                         """
                     }
