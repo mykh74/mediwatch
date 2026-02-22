@@ -10,6 +10,18 @@ kubectl describe pod {pod_name} -n {namespace}
 # Quick list of container names using jsonpath
 kubectl get pod airflow-scheduler-0 -n airflow -o jsonpath='{.spec.initContainers[*].name} {.spec.containers[*].name}'
 
+# Debugging Init:Error (Pod stuck in initialization)
+# 1. Identify the failing init container (look for State: Terminated / Reason: Error)
+kubectl describe pod {pod_name} -n {namespace}
+# 2. Get logs for that specific init container
+kubectl logs {pod_name} -n {namespace} -c {failing_init_container_name}
+
+### Common Git-Sync Errors
+# Error: "fatal: couldn't find remote ref <branch_name>"
+# Cause: The branch does not exist in the specific repository URL configured.
+# Fix: 
+# 1. Verify you pushed the branch to the DAGs repo (e.g., mediwatch-DAGs), not the main project repo.
+# 2. Check for typos in the branch name or repository URL in values.yaml.
 ```
 
 ## postgres:

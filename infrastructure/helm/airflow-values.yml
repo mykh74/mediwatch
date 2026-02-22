@@ -11,7 +11,7 @@ dags:
   gitSync:
     enabled: true
     # Use HTTPS instead of SSH for better compatibility
-    repo: https://github.com/PeterMoras/mediwatch-DAGs.git
+    repo: https://github.com/mykh74/mediwatch.git
     branch: pmoras-manual
     # The folder in your repo where DAGs are located (leave empty if they are at the root)
     subPath: "dags"
