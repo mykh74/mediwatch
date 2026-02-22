@@ -152,6 +152,7 @@ pipeline {
                             // Build the Docker image using the Dockerfile in the specified directory
                             sh 'docker build -t evidently-worker:latest .'
                         }
+                    }
                 }
 
                 // script {
