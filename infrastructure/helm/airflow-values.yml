@@ -1,8 +1,8 @@
 images:
   airflow:
-    repository: http://host.docker.internal:5000/airflow-custom
+    repository: host.docker.internal:5000/airflow-custom
     tag: latest
-    pullPolicy: Never # Crucial for Docker Desktop!
+    pullPolicy: Always # Crucial for Docker Desktop!
 
 # Disable the creation of the Postgres pod
 postgresql:
