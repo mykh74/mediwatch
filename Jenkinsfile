@@ -143,7 +143,7 @@ pipeline {
                 }
                 stage("Deploy Evidently") {
                     steps {
-                        dir('infrastructure/evidently') {
+                        dir('infrastructure/helm') {
                             sh label: 'Deploying Evidently with Helm', script: '''
                             helm upgrade --install evidently-worker ./evidently-app --namespace evidently --create-namespace \
                                 --set resources.requests.memory=2Gi
