@@ -1,5 +1,5 @@
 pipeline {
-    agent none // Use 'none' to define agents at the stage level for more granular control
+    agent any // Use 'none' to define agents at the stage level for more granular control
     // agent {
     //     docker { 
     //         image 'dtzar/helm-kubectl:3.12.0' // Use an image with both Helm and Kubectl
