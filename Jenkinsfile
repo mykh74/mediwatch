@@ -41,10 +41,11 @@ pipeline {
             steps {
                 script {
                    
-                    sh 'echo "Building Evidently Docker image with Dockerfile (requires Docker daemon)"'
                     dir('infrastructure/evidently/docker') {
                         // Build the Docker image using the Dockerfile in the specified directory
-                        sh 'docker build -t evidently-worker:latest .'
+                        sh label: 'Building Evidently Docker image', script: '''
+                            docker build -t evidently-worker:latest .
+                        '''
                         // sh 'docker tag evidently-worker:${BUILD_ID} evidently-worker:latest'
                     }
                     
@@ -82,7 +83,7 @@ pipeline {
                     }
                         
                 }
-                stage('Deploy to Airflow'){
+                stage('Deploy Airflow'){
                     steps{
                         script{// Confirm Github token provides access to the repository
                             sh label: 'Checking GitHub access with provided token', script: '''
@@ -115,15 +116,13 @@ pipeline {
                                         --create-namespace \
                                         -f airflow-values.yml
                                 '''
-                                // sh 'helm repo add apache-airflow https://airflow.apache.org || true'
-                                // sh 'helm repo update'
-                                // sh 'helm upgrade --install airflow apache-airflow/airflow --namespace airflow --create-namespace -f airflow-values.yml'
+                               
                             }
                         }
 
                     }
                 }
-                stage("Deploy to MLflow"){
+                stage("Deploy MLflow"){
                     steps{
                         // Named step: MLflow
                         //echo 'Deploying MLflow (named step)'
@@ -142,15 +141,13 @@ pipeline {
                         }
                     }
                 }
-                stage("Deploy to Evidently") {
+                stage("Deploy Evidently") {
                     steps {
-                        // Named step: Evidently
-                        echo 'Deploying Evidently (named step)'
                         dir('infrastructure/evidently') {
-                            sh """
+                            sh label: 'Deploying Evidently with Helm', script: '''
                             helm upgrade --install evidently-worker ./evidently-app --namespace evidently --create-namespace \
                                 --set resources.requests.memory=2Gi
-                            """
+                            '''
                         }
                     }
                 }
