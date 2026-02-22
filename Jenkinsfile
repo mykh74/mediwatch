@@ -3,7 +3,7 @@ pipeline {
         docker { 
             image 'dtzar/helm-kubectl:3.12.0' // Use an image with both Helm and Kubectl
 
-            args '-u root --entrypoint=' // Run as root to allow Helm to use entrypoint for commands
+            args '-u root --entrypoint='  // Run as root to allow Helm to use entrypoint for commands
         }
     }
 
@@ -115,6 +115,12 @@ pipeline {
             }
         }
         stage('Build Evidently docker Image') {
+            agent {
+                docker { 
+                    image 'docker:latest' 
+                    args '-v /var/run/docker.sock:/var/run/docker.sock' 
+                }
+            }
             steps {
                 script {
                     dir('infrastructure/evidently/docker') {
