@@ -8,13 +8,13 @@ with DAG("evidently_drift_check", start_date=datetime.now(), schedule="@daily") 
         task_id="run_evidently_drift_check",
         name="evidently-drift-pod",
         namespace="airflow-workers",
-        image="your-registry/evidently-worker:latest",
+        image="evidently-worker:latest",
         # Pass data paths as arguments
-        arguments=[],
+        arguments=["my_arg0", "my_arg1"],  
         # Enable XCom to pass the 'drift_detected' flag back to Airflow
         do_xcom_push=True,
         # Ensure the pod cleans up after running
         is_delete_operator_pod=True,
         # Environment variables for MLflow or AWS
-        env_vars={"MLFLOW_TRACKING_URI": "http://mlflow:5000"}
+        env_vars={"MLFLOW_TRACKING_URI": "http://mlflow:5432"}
     )

@@ -26,4 +26,6 @@ def run_monitoring(ref_path, cur_path):
 
 if __name__ == "__main__":
     print("Starting drift detection...")
-    # run_monitoring(sys.argv[1], sys.argv[2])
+    if(len(sys.argv) >= 3):
+        print(f"Running drift detection on reference: {sys.argv[1]}, current: {sys.argv[2]}")
+        # run_monitoring(sys.argv[1], sys.argv[2])

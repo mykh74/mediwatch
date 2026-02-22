@@ -2,6 +2,7 @@ image:
   repository: evidently-worker
   tag: "latest"
   pullPolicy: Never # Crucial for Docker Desktop!
+  restartPolicy: Never #called by Airflow, so we want it to exit after running the task
 
 resources:
   requests:
