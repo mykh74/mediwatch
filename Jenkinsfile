@@ -6,7 +6,7 @@ pipeline {
     //         args '-u root --entrypoint='  // Run as root to allow Helm to use entrypoint for commands
     //     }
     // }
-    agent none // Run stages on different agents as needed
+    agent any // Run stages on different agents as needed
     environment {
         // Jenkins Credentials Binding
 
@@ -129,6 +129,7 @@ pipeline {
             }
         }
         stage('Build Evidently docker Image') {
+            agent any
             // agent {
             //     docker { 
             //         image 'dtzar/helm-kubectl:3.12.0' // Use an image with both Helm and Kubectl
