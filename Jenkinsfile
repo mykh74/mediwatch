@@ -60,14 +60,14 @@ pipeline {
                     args '-u root --entrypoint= -v ${KUBECONFIG}:${KUBECONFIG}:ro'
                 }
             }
-            steps {
-                script {
-                    // Named step: Postgres
-                    //echo 'Deploying Postgres (named step)'
+            stage('Deploy to Postgress') {
+                //echo 'Deploying Postgres (named step)'
+                steps{
+
                     dir('infrastructure/helm') {
-                        sh label: 'Deploying Postgres with Helm', script: '''
-                            helm repo add bitnami https://charts.bitnami.com/bitnami || true
-                            helm repo update
+                        sh 'helm repo add bitnami https://charts.bitnami.com/bitnami || true'
+                        sh 'helm repo update'
+                        sh '''
                             helm upgrade --install postgres bitnami/postgresql \
                                 -f postgres-values.yml \
                                 --set auth.username=${POSTGRES_APP_USR} \
@@ -76,18 +76,15 @@ pipeline {
                                 --set auth.database=${DB_NAME} \
                                 --wait
                         '''
-                        // sh 'helm repo add bitnami https://charts.bitnami.com/bitnami || true'
-                        // sh 'helm repo update'
-                        // sh '''
-                        //     helm upgrade --install postgres bitnami/postgresql \
-                        //         -f postgres-values.yml \
-                        //         --set auth.username=${POSTGRES_APP_USR} \
-                        //         --set auth.password=${POSTGRES_APP_PSW} \
-                        //         --set auth.postgresPassword=${POSTGRES_ADMIN} \
-                        //         --set auth.database=${DB_NAME} \
-                        //         --wait
-                        // '''
                     }
+                    
+                }
+                    
+            }
+            steps {
+                script {
+                    // Named step: Postgres
+                    
 
                     // Named step: Airflow
                     // echo 'Deploying Airflow (named step)'
