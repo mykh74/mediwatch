@@ -25,6 +25,12 @@ pipeline {
         }
         
         stage('Build Docker Images'){
+            agent {
+                docker { 
+                    image 'docker:dind' // Use a Docker image with the Docker CLI installed for building and pushing images
+                    args '-v /var/run/docker.sock:/var/run/docker.sock' // Mount Docker socket to allow Docker commands to work inside the container, and add host entry for Kubernetes API access
+                }
+            }
             stages{
                 stage('Build Airflow Docker Image'){
                     steps{
@@ -64,8 +70,9 @@ pipeline {
             agent {
                 docker { 
                     image 'dtzar/helm-kubectl:3.12.0'
-                    
-                    args '--add-host=kubernetes:host-gateway -v ${KUBECONFIG}:${KUBECONFIG}:ro'//-v ${KUBECONFIG}:${KUBECONFIG}:ro'
+                    //--add-host=kubernetes:host-gateway allows the container to resolve 'kubernetes' to the host's gateway IP, enabling kubectl/helm inside the container to communicate with the Kubernetes API server running on the host machine. 
+                    //-v ${KUBECONFIG}:${KUBECONFIG}:ro' mounts the kubeconfig file from the Jenkins host into the container in read-only mode
+                    args '--add-host=kubernetes:host-gateway -v ${KUBECONFIG}:${KUBECONFIG}:ro'
                 }
             }
             environment{
@@ -100,6 +107,9 @@ pipeline {
                         
                 }
                 stage('Deploy Airflow'){
+                    environment{
+                        AIRFLOW_CHART_URL = 'oci://registry-1.docker.io/bitnamicharts/airflow' // Using OCI registry URL for Bitnami Airflow Helm chart to avoid issues with helm repo add in some environments
+                    }
                     steps{
                         script{// Confirm Github token provides access to the repository
                             sh label: 'Checking GitHub access with provided token', script: '''
@@ -130,10 +140,8 @@ pipeline {
                             }
                             //echo 'Deploying airflow with Helm (named step)'
                             dir('infrastructure/helm') {
-                                sh 'helm repo add apache-airflow https://airflow.apache.org || true'
-                                sh 'helm repo update'
                                 sh label: 'Deploying Airflow with Helm', script: '''
-                                    helm upgrade --install airflow apache-airflow/airflow \
+                                    helm upgrade --install airflow ${AIRFLOW_CHART_URL} \
                                         --namespace airflow \
                                         --create-namespace \
                                         --set airflowPodAnnotations.git_commit=${gitCommit} \
