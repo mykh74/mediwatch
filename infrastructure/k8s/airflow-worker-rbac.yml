@@ -40,7 +40,7 @@ metadata:
   name: airflow-scheduler-kpo-binding
 subjects:
 - kind: ServiceAccount
-  name: airflow-api-server
+  name: airflow-worker
   namespace: airflow
 roleRef:
   kind: Role
