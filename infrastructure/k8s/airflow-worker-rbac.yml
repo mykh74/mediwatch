@@ -3,6 +3,12 @@ kind: Namespace
 metadata:
   name: airflow-worker
 ---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: airflow-worker
+  name: airflow-worker
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
