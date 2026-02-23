@@ -27,6 +27,14 @@ dags:
     knownHosts: |
       github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
 
+### CONFIG BELOW REQUIRED FOR KubernetesPodOperator TO WORK PROPERLY ###
 # RBAC settings to allow Airflow to manage pods for the KubernetesPodOperator
 rbac:
   create: true
+# define identity for the KubernetesPodOperator to use when launching pods
+worker:
+  serviceAccount:
+    create: true
+    name: "kpo-executor"  # Updated name
+#allow the actual launching of pods by the KubernetesPodOperator (in addition to the RBAC permissions)
+allowPodLaunching: true
