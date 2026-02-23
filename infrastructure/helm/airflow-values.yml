@@ -33,8 +33,8 @@ rbac:
 
 #where worker pods will be launched. 
   serviceAccount:
-    create: true
-    name: "airflow-worker"
+    create: false
+    name: "kpo-executor"
 
 # This section grants the worker permission to manage pods
 # in its own namespace and/or a target namespace

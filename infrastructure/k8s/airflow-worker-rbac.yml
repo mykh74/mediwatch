@@ -1,18 +1,18 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: airflow-worker
+  name: airflow-kpo
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  namespace: airflow-worker
-  name: airflow-worker
+  namespace: airflow-kpo
+  name: kpo-executor
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  namespace: airflow-worker # <--- The target namespace from your error
+  namespace: airflow-kpo
   name: pod-launcher-role
 rules:
 - apiGroups: [""]
@@ -22,12 +22,12 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  namespace: airflow-worker # <--- The target namespace
-  name: airflow-worker-launcher-binding
+  namespace: airflow-kpo
+  name: kpo-launcher-binding
 subjects:
 - kind: ServiceAccount
-  name: airflow-worker
-  namespace: airflow # <--- The namespace where Airflow is actually installed
+  name: kpo-executor
+  namespace: airflow-kpo
 roleRef:
   kind: Role
   name: pod-launcher-role
