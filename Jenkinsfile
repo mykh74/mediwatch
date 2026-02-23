@@ -126,7 +126,7 @@ pipeline {
                                     helm upgrade --install airflow apache-airflow/airflow \
                                         --namespace airflow \
                                         --create-namespace \
-                                        --set airflowPodAnnotations.git_commit=${gitCommit} \ 
+                                        --set airflowPodAnnotations.git_commit=${gitCommit} \
                                         -f airflow-values.yml
                                 '''
                                
