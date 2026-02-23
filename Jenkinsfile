@@ -72,7 +72,7 @@ pipeline {
                     image 'dtzar/helm-kubectl:3.12.0'
                     //--add-host=kubernetes:host-gateway allows the container to resolve 'kubernetes' to the host's gateway IP, enabling kubectl/helm inside the container to communicate with the Kubernetes API server running on the host machine. 
                     //-v ${KUBECONFIG}:${KUBECONFIG}:ro' mounts the kubeconfig file from the Jenkins host into the container in read-only mode
-                    args '--add-host=kubernetes:host-gateway -v ${KUBECONFIG}:${KUBECONFIG}:ro'
+                    args '--privileged --add-host=kubernetes:host-gateway -v ${KUBECONFIG}:${KUBECONFIG}:ro'
                 }
             }
             environment{
