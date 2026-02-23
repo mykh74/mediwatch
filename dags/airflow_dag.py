@@ -9,6 +9,7 @@ with DAG("evidently_drift_check", start_date=datetime(2024, 1, 1), schedule=None
         task_id="run_evidently_drift_check",
         name="evidently-drift-pod",
         namespace="airflow-worker",
+        service_account_name="airflow-worker",
         image="evidently-worker:latest",
         # Pass data paths as arguments
         arguments=["my_arg0", "my_arg1"],  

@@ -23,6 +23,7 @@ pipeline {
                 checkout scm
             }
         }
+        
         stage('Build Docker Images'){
             stages{
                 stage('Build Airflow Docker Image'){
@@ -88,6 +89,9 @@ pipeline {
                     }
                         
                 }
+                stage('Deploy airflow RBAC'){
+                    
+                }
                 stage('Deploy Airflow'){
                     steps{
                         script{// Confirm Github token provides access to the repository
@@ -111,6 +115,9 @@ pipeline {
                                 sh 'kubectl apply -k .'
                                 sh 'rm db-secret.env git-secret.env'
                             }
+                            dir('infrastructure/k8s'){
+                                sh 'kubectl apply -f airflow-worker-rbac.yml'
+                            }
                             //echo 'Deploying airflow with Helm (named step)'
                             dir('infrastructure/helm') {
                                 sh 'helm repo add apache-airflow https://airflow.apache.org || true'
@@ -119,6 +126,7 @@ pipeline {
                                     helm upgrade --install airflow apache-airflow/airflow \
                                         --namespace airflow \
                                         --create-namespace \
+                                        --set airflowPodAnnotations.git_commit=${gitCommit} \ 
                                         -f airflow-values.yml
                                 '''
                                
@@ -132,30 +140,20 @@ pipeline {
                         // Named step: MLflow
                         //echo 'Deploying MLflow (named step)'
                         dir('infrastructure/helm') {
-                            sh label: 'Deploying MLflow with Helm', script: '''
-                                helm repo add community-charts https://community-charts.github.io || true
-                                helm repo update
-                                helm upgrade --install mlflow community-charts/mlflow \
-                                    --namespace mlflow \
-                                    --create-namespace \
-                                    -f mlflow-values.yml || true
-                            '''
+                            // sh label: 'Deploying MLflow with Helm', script: '''
+                            //     helm repo add community-charts https://community-charts.github.io || true
+                            //     helm repo update
+                            //     helm upgrade --install mlflow community-charts/mlflow \
+                            //         --namespace mlflow \
+                            //         --create-namespace \
+                            //         -f mlflow-values.yml || true
+                            // '''
                             // sh 'helm repo add community-charts https://community-charts.github.io || true'
                             // sh 'helm repo update'
                             // sh 'helm upgrade --install mlflow community-charts/mlflow --namespace mlflow --create-namespace -f mlflow-values.yml || true'
                         }
                     }
                 }
-                // stage("Deploy Evidently") {
-                //     steps {
-                //         dir('infrastructure/helm') {
-                //             sh label: 'Deploying Evidently with Helm', script: '''
-                //             helm upgrade --install evidently-worker ./evidently-app --namespace evidently --create-namespace \
-                //                 --set resources.requests.memory=2Gi
-                //             '''
-                //         }
-                //     }
-                // }
             }
         }
         
