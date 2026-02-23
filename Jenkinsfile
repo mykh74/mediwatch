@@ -25,12 +25,13 @@ pipeline {
         }
         
         stage('Build Docker Images'){
-            agent {
-                docker { 
-                    image 'docker:dind' // Use a Docker image with the Docker CLI installed for building and pushing images
-                    args '--privileged -v /var/run/docker.sock:/var/run/docker.sock' // Mount Docker socket to allow Docker commands to work inside the container, and add host entry for Kubernetes API access
-                }
-            }
+            agent any
+            // agent {
+            //     docker { 
+            //         image 'docker:dind' // Use a Docker image with the Docker CLI installed for building and pushing images
+            //         args '--privileged -v /var/run/docker.sock:/var/run/docker.sock' // Mount Docker socket to allow Docker commands to work inside the container, and add host entry for Kubernetes API access
+            //     }
+            // }
             environment{
                 //DOCKER_BUILDKIT = '1' // Enable BuildKit for more efficient Docker builds
                 HOME = "${env.WORKSPACE}" // Set HOME to workspace to avoid permission issues with Docker config
