@@ -70,14 +70,17 @@ pipeline {
             }
             stages{
                 stage('Deploy Postgress') {
+                    environment{
+                       POSTGRES_CHART_URL = 'oci://registry-1.docker.io/bitnamicharts/postgresql' // Using OCI registry URL for Bitnami Postgres Helm chart to avoid issues with helm repo add in some environments
+                    }
                     //echo 'Deploying Postgres (named step)'
                     steps{
 
                         dir('infrastructure/helm') {
-                            sh 'helm repo add bitnami https://charts.bitnami.com/bitnami || true'
-                            sh 'helm repo update'
+                            // sh 'helm repo add bitnami https://charts.bitnami.com/bitnami || true'
+                            // sh 'helm repo update'
                             sh '''
-                                helm upgrade --install postgres bitnami/postgresql \
+                                helm upgrade --install postgres ${POSTGRES_CHART_URL} \
                                     -f postgres-values.yml \
                                     --set auth.username=${POSTGRES_APP_USR} \
                                     --set auth.password=${POSTGRES_APP_PSW} \
