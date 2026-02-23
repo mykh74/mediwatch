@@ -30,12 +30,3 @@ dags:
 # RBAC settings to allow Airflow to manage pods for the KubernetesPodOperator
 rbac:
   create: true
-
-#where worker pods will be launched. 
-  serviceAccount:
-    create: false
-    name: "kpo-executor"
-
-# This section grants the worker permission to manage pods
-# in its own namespace and/or a target namespace
-allowPodLaunching: true
