@@ -26,3 +26,16 @@ dags:
     # GitHub's public SSH key to prevent man-in-the-middle attacks
     knownHosts: |
       github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
+
+# RBAC settings to allow Airflow to manage pods for the KubernetesPodOperator
+rbac:
+  create: true
+
+#where worker pods will be launched. 
+  serviceAccount:
+    create: true
+    name: "airflow-worker"
+
+# This section grants the worker permission to manage pods
+# in its own namespace and/or a target namespace
+allowPodLaunching: true
