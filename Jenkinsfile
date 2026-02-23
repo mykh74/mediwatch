@@ -28,7 +28,7 @@ pipeline {
             agent {
                 docker { 
                     image 'docker:dind' // Use a Docker image with the Docker CLI installed for building and pushing images
-                    args '-v /var/run/docker.sock:/var/run/docker.sock' // Mount Docker socket to allow Docker commands to work inside the container, and add host entry for Kubernetes API access
+                    args '--privileged -v /var/run/docker.sock:/var/run/docker.sock' // Mount Docker socket to allow Docker commands to work inside the container, and add host entry for Kubernetes API access
                 }
             }
             stages{
@@ -72,7 +72,7 @@ pipeline {
                     image 'dtzar/helm-kubectl:3.12.0'
                     //--add-host=kubernetes:host-gateway allows the container to resolve 'kubernetes' to the host's gateway IP, enabling kubectl/helm inside the container to communicate with the Kubernetes API server running on the host machine. 
                     //-v ${KUBECONFIG}:${KUBECONFIG}:ro' mounts the kubeconfig file from the Jenkins host into the container in read-only mode
-                    args '--privileged --add-host=kubernetes:host-gateway -v ${KUBECONFIG}:${KUBECONFIG}:ro'
+                    args '--add-host=kubernetes:host-gateway -v ${KUBECONFIG}:${KUBECONFIG}:ro'
                 }
             }
             environment{
