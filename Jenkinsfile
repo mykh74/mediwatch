@@ -89,9 +89,6 @@ pipeline {
                     }
                         
                 }
-                stage('Deploy airflow RBAC'){
-                    
-                }
                 stage('Deploy Airflow'){
                     steps{
                         script{// Confirm Github token provides access to the repository
@@ -115,8 +112,11 @@ pipeline {
                                 sh 'kubectl apply -k .'
                                 sh 'rm db-secret.env git-secret.env'
                             }
+                            // Apply RBAC for Airflow workers to allow them to create pods for the KubernetesPodOperator
                             dir('infrastructure/k8s'){
-                                sh 'kubectl apply -f airflow-worker-rbac.yml'
+                                sh label: 'Applying Airflow Worker RBAC', script: '''
+                                    kubectl apply -f airflow-worker-rbac.yml
+                                '''
                             }
                             //echo 'Deploying airflow with Helm (named step)'
                             dir('infrastructure/helm') {
