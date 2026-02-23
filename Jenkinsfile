@@ -112,9 +112,9 @@ pipeline {
                                 sh 'kubectl apply -k .'
                                 sh 'rm db-secret.env git-secret.env'
                             }
-                            // Apply RBAC for Airflow workers to allow them to create pods for the KubernetesPodOperator
+                            // Apply RBAC for Airflow scheduler to allow it to create pods in airflow-kpo namespace
                             dir('infrastructure/k8s'){
-                                sh label: 'Applying Airflow Worker RBAC', script: '''
+                                sh label: 'Applying Airflow KPO RBAC', script: '''
                                     kubectl apply -f airflow-worker-rbac.yml
                                 '''
                             }
