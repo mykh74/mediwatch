@@ -64,7 +64,8 @@ pipeline {
             agent {
                 docker { 
                     image 'dtzar/helm-kubectl:3.12.0'
-                    args '-u root --entrypoint= -v ${KUBECONFIG}:${KUBECONFIG}:ro'
+                    
+                    args '-u root --entrypoint= --add-host=kubernetes:host-gateway'//-v ${KUBECONFIG}:${KUBECONFIG}:ro'
                 }
             }
             stages{
