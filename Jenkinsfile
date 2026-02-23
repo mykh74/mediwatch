@@ -68,6 +68,12 @@ pipeline {
                     args '--add-host=kubernetes:host-gateway -v ${KUBECONFIG}:${KUBECONFIG}:ro'//-v ${KUBECONFIG}:${KUBECONFIG}:ro'
                 }
             }
+            environment{
+                // These ensure Helm doesn't try to write to the root (/) directory
+                HELM_CACHE_HOME  = "${WORKSPACE}/.helm/cache"
+                HELM_CONFIG_HOME = "${WORKSPACE}/.helm/config"
+                HELM_DATA_HOME   = "${WORKSPACE}/.helm/data"
+            }
             stages{
                 stage('Deploy Postgress') {
                     environment{
